@@ -104,7 +104,7 @@ impl TryFrom<MountAttrs> for PerMountFlags {
 
         let atime_attrs = attrs & (MountAttrs::NOATIME | MountAttrs::STRICTATIME);
         if atime_attrs.bits().count_ones() > 1 {
-            return_errno_with_message!(Errno::EINVAL, "conflicting atime mount attributes");
+            return_errno!(Errno::EINVAL, "conflicting atime mount attributes");
         }
 
         let mut flags = PerMountFlags::from_bits_truncate((attrs & SHARED_BITS).bits());

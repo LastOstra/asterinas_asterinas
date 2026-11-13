@@ -127,7 +127,7 @@ fn try_append_entry_to_rootfs<R: Read>(
     // Make sure the name is a relative path, and is not end with "/".
     let entry_name = entry.name().trim_start_matches('/').trim_end_matches('/');
     if entry_name.is_empty() {
-        return_errno_with_message!(Errno::EINVAL, "invalid entry name");
+        return_errno!(Errno::EINVAL, "invalid entry name");
     }
     if is_dot(entry_name) {
         return Ok(());
@@ -180,7 +180,7 @@ fn try_append_entry_to_rootfs<R: Read>(
             parent.mknod(name, mode, MknodType::NamedPipe)?;
         }
         FileType::Socket => {
-            return_errno_with_message!(Errno::EINVAL, "socket files are not supported in initramfs")
+            return_errno!(Errno::EINVAL, "socket files are not supported in initramfs")
         }
     }
 

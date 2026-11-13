@@ -144,7 +144,7 @@ impl ProcDirOps for NsDirOps {
     fn lookup_child(&self, this_dir: &ProcDir<Self>, name: &str) -> Result<Arc<dyn Inode>> {
         if name == "user" {
             let Some(process) = self.dir.process() else {
-                return_errno_with_message!(Errno::ESRCH, "the process does not exist");
+                return_errno!(Errno::ESRCH, "the process does not exist");
             };
 
             let user_ns = process.user_ns().lock();
@@ -160,7 +160,7 @@ impl ProcDirOps for NsDirOps {
             .ok_or_else(|| Error::with_message(Errno::ENOENT, "the file does not exist"))?;
 
         let Some(thread) = self.dir.thread() else {
-            return_errno_with_message!(Errno::ESRCH, "the thread does not exist");
+            return_errno!(Errno::ESRCH, "the thread does not exist");
         };
 
         let ns_proxy_guard = thread.as_posix_thread().unwrap().ns_proxy().lock();
@@ -175,7 +175,7 @@ impl ProcDirOps for NsDirOps {
         F: FnMut(ReaddirEntry<'a>) -> Result<()>,
     {
         let Some(thread) = self.dir.thread() else {
-            return_errno_with_message!(Errno::ENOENT, "the thread does not exist");
+            return_errno!(Errno::ENOENT, "the thread does not exist");
         };
 
         let has_ns_proxy = thread

@@ -154,12 +154,12 @@ fn do_change_type(target_path: Path, flags: MountFlags, ctx: &Context) -> Result
         .union(MountFlags::MS_SILENT);
 
     if !(flags & !ALLOWED_FLAGS).is_empty() {
-        return_errno_with_message!(Errno::EINVAL, "the mount propagation flags are unsupported");
+        return_errno!(Errno::EINVAL, "the mount propagation flags are unsupported");
     }
 
     let propagation_flags = flags & MS_PROPAGATION;
     if propagation_flags.bits().count_ones() > 1 {
-        return_errno_with_message!(
+        return_errno!(
             Errno::EINVAL,
             "mount flags includes more than one of MS_SHARED, MS_PRIVATE, MS_SLAVE, or MS_UNBINDABLE"
         );
@@ -208,7 +208,7 @@ fn do_new_mount(
     ctx: &Context,
 ) -> Result<()> {
     if target_path.type_() != InodeType::Dir {
-        return_errno_with_message!(Errno::ENOTDIR, "mountpoint must be directory");
+        return_errno!(Errno::ENOTDIR, "mountpoint must be directory");
     };
 
     let fs_type = {
@@ -216,7 +216,7 @@ fn do_new_mount(
             .user_space()
             .read_cstring(fs_type_addr, MAX_FILENAME_LEN)?;
         if fs_type_cstr.is_empty() {
-            return_errno_with_message!(Errno::EINVAL, "empty file system type");
+            return_errno!(Errno::EINVAL, "empty file system type");
         }
 
         let fs_type_str = fs_type_cstr

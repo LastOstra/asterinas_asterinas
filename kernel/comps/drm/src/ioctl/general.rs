@@ -66,7 +66,7 @@ impl DrmFile {
     pub(super) fn drm_get_cap(&self, cmd: ioctl_defs::GetCap) -> Result<i32> {
         let mut args: DrmGetCap = cmd.read()?;
         let Ok(cap) = DrmGetCapability::try_from(args.capability) else {
-            return_errno_with_message!(Errno::EINVAL, "the DRM device capability is unknown");
+            return_errno!(Errno::EINVAL, "the DRM device capability is unknown");
         };
         let device = self.device();
 

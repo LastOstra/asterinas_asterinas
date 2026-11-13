@@ -56,7 +56,7 @@ impl NsCommonOps for UserNamespace {
     fn parent(&self) -> Result<&Arc<Self>> {
         // User namespaces do not support `NS_GET_PARENT`.
         // Reference: <https://elixir.bootlin.com/linux/v6.19/source/kernel/user_namespace.c#L1407>
-        return_errno_with_message!(Errno::EPERM, "user namespaces do not support NS_GET_PARENT");
+        return_errno!(Errno::EPERM, "user namespaces do not support NS_GET_PARENT");
     }
 
     fn stashed_dentry(&self) -> &StashedDentry {

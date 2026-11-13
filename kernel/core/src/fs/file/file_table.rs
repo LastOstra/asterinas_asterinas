@@ -88,7 +88,7 @@ impl TryFrom<RawFileDesc> for FileDesc {
 
     fn try_from(value: RawFileDesc) -> Result<Self> {
         if value < 0 {
-            return_errno_with_message!(Errno::EBADF, "negative FDs are not valid");
+            return_errno!(Errno::EBADF, "negative FDs are not valid");
         }
         Ok(Self(RangedU32::new(value.cast_unsigned())))
     }
@@ -202,7 +202,7 @@ impl FileTable {
             .get_rlimit(ResourceType::RLIMIT_NOFILE)
             .get_cur();
         if u64::from(new_fd) >= fd_limit {
-            return_errno_with_message!(Errno::EBADF, "the new FD reaches the FD limit");
+            return_errno!(Errno::EBADF, "the new FD reaches the FD limit");
         }
 
         let file = self

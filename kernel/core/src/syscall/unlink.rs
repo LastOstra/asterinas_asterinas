@@ -42,9 +42,9 @@ pub(super) fn sys_unlinkat(
         if path_name.ends_with('/') {
             let target = path_resolver.lookup_at_path(&dir_path, target_name)?;
             if target.type_() == InodeType::Dir {
-                return_errno_with_message!(Errno::EISDIR, "a directory cannot be unlinked");
+                return_errno!(Errno::EISDIR, "a directory cannot be unlinked");
             } else {
-                return_errno_with_message!(
+                return_errno!(
                     Errno::ENOTDIR,
                     "the path ends with a slash but is not a directory"
                 );

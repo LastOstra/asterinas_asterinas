@@ -342,14 +342,14 @@ impl Inode for RootInode {
         let name = child_dentry.name();
         match name.as_str() {
             "." | ".." => {
-                return_errno_with_message!(Errno::EISDIR, "the devpts directory cannot be unlinked")
+                return_errno!(Errno::EISDIR, "the devpts directory cannot be unlinked")
             }
-            "ptmx" => return_errno_with_message!(Errno::EPERM, "the ptmx inode cannot be unlinked"),
+            "ptmx" => return_errno!(Errno::EPERM, "the ptmx inode cannot be unlinked"),
             slave => {
                 if self.slaves.read().find_entry_by_name(slave).is_none() {
-                    return_errno_with_message!(Errno::ENOENT, "the slave inode does not exist");
+                    return_errno!(Errno::ENOENT, "the slave inode does not exist");
                 }
-                return_errno_with_message!(Errno::EPERM, "the slave inode cannot be unlinked");
+                return_errno!(Errno::EPERM, "the slave inode cannot be unlinked");
             }
         }
     }

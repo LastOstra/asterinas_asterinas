@@ -118,7 +118,7 @@ fn setxattr(
     check_xattr_namespace(xattr_name.namespace(), ctx)?;
 
     if value_len > XATTR_VALUE_MAX_LEN {
-        return_errno_with_message!(Errno::E2BIG, "xattr value too long");
+        return_errno!(Errno::E2BIG, "xattr value too long");
     }
     let mut value_reader = user_space.reader(value_ptr, value_len)?;
 
@@ -127,7 +127,7 @@ fn setxattr(
         path.set_xattr(xattr_name, &mut value_reader, flags, ctx)?;
     } else {
         if value_len > FileCapabilities::MAX_XATTR_SIZE {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "the length of file capabilities does not match its revision"
             );
@@ -139,12 +139,12 @@ fn setxattr(
 
         let (revision, _) = FileCapabilities::parse_header(raw_value)?;
         if revision == VfsCapRevision::V1 {
-            return_errno_with_message!(Errno::EINVAL, "v1 file capabilities cannot be written");
+            return_errno!(Errno::EINVAL, "v1 file capabilities cannot be written");
         }
         if revision == VfsCapRevision::V3
             && FileCapabilities::read_v3_uid(raw_value)? == Uid::INVALID
         {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "v3 file capabilities contain an invalid root UID"
             );
@@ -193,7 +193,7 @@ pub(super) fn lookup_path_for_xattr<'a>(
         XattrFileCtx::FileHandle(file) => {
             let file = file.as_inode_handle_or_err()?;
             if file.status_flags().contains(StatusFlags::O_PATH) {
-                return_errno_with_message!(Errno::EBADF, "the file is opened as a path");
+                return_errno!(Errno::EBADF, "the file is opened as a path");
             }
             let path = file.path();
             Ok(Cow::Borrowed(path))
@@ -218,7 +218,7 @@ pub(super) fn read_xattr_name_cstr_from_user(
 
 pub(super) fn parse_xattr_name(name_str: &str) -> Result<XattrName<'_>> {
     if name_str.is_empty() || name_str.len() > XATTR_NAME_MAX_LEN {
-        return_errno_with_message!(Errno::ERANGE, "xattr name empty or too long");
+        return_errno!(Errno::ERANGE, "xattr name empty or too long");
     }
 
     let xattr_name = XattrName::try_from_full_name(name_str)
@@ -237,7 +237,7 @@ pub(super) fn check_xattr_namespace(namespace: XattrNamespace, ctx: &Context) ->
         .permitted_capset()
         .contains(CapSet::SYS_ADMIN)
     {
-        return_errno_with_message!(
+        return_errno!(
             Errno::EPERM,
             "try to access trusted xattr without permitted CAP_SYS_ADMIN"
         );

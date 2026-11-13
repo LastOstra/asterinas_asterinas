@@ -68,11 +68,11 @@ impl PendingOp {
     fn new(sops: Vec<SemBuf>, pid: Pid, num_sems: usize) -> Result<Self> {
         for op in sops.iter() {
             if op.sem_num as usize >= num_sems {
-                return_errno_with_message!(Errno::EFBIG, "the semaphore number is out of bounds");
+                return_errno!(Errno::EFBIG, "the semaphore number is out of bounds");
             }
             if IpcFlags::from_bits_truncate(op.sem_flags as u32).contains(IpcFlags::SEM_UNDO) {
                 // TODO: Add support for the `SEM_UNDO` flag
-                return_errno_with_message!(Errno::EINVAL, "SEM_UNDO is not supported yet");
+                return_errno!(Errno::EINVAL, "SEM_UNDO is not supported yet");
             }
         }
 
@@ -188,7 +188,7 @@ pub(crate) fn sem_op(
     let has_dup = check_dup_sops(&sops);
     if has_dup {
         warn!("Multiple operations on the same semaphore are not supported");
-        return_errno_with_message!(
+        return_errno!(
             Errno::EOPNOTSUPP,
             "multiple operations on the same semaphore are not supported"
         );
@@ -253,25 +253,25 @@ pub(crate) fn sem_op(
         match status {
             Status::Normal => Ok(()),
             Status::Removed => {
-                return_errno_with_message!(Errno::EIDRM, "the semaphore set is removed");
+                return_errno!(Errno::EIDRM, "the semaphore set is removed");
             }
             Status::Pending => {
                 if let Some(err) = waiter_error
                     && err.error() == Errno::ETIME
                 {
-                    return_errno_with_message!(Errno::EAGAIN, "the time limit is reached");
+                    return_errno!(Errno::EAGAIN, "the time limit is reached");
                 } else {
-                    return_errno_with_message!(
+                    return_errno!(
                         Errno::EINTR,
                         "the current thread is interrupted by a signal"
                     )
                 }
             }
             Status::ErrWouldBlock => {
-                return_errno_with_message!(Errno::EAGAIN, "the semaphore operation would block");
+                return_errno!(Errno::EAGAIN, "the semaphore operation would block");
             }
             Status::ErrValRange => {
-                return_errno_with_message!(Errno::ERANGE, "the semaphore value exceeds SEMVMX");
+                return_errno!(Errno::ERANGE, "the semaphore value exceeds SEMVMX");
             }
         }
     }

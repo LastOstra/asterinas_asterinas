@@ -48,7 +48,7 @@ pub(super) fn sys_futex(
         if is_real_time && futex_op == FutexOp::FUTEX_WAIT {
             // Reference:
             // <https://github.com/torvalds/linux/commit/4fbf5d6837bf81fd7a27d771358f4ee6c4f243f8>
-            return_errno_with_message!(Errno::ENOSYS, "FUTEX_WAIT cannot use CLOCK_REALTIME");
+            return_errno!(Errno::ENOSYS, "FUTEX_WAIT cannot use CLOCK_REALTIME");
         }
 
         let timeout = {
@@ -130,7 +130,7 @@ pub(super) fn sys_futex(
         }
         _ => {
             warn!("futex op = {:?}", futex_op);
-            return_errno_with_message!(Errno::ENOSYS, "unsupported futex op");
+            return_errno!(Errno::ENOSYS, "unsupported futex op");
         }
     }
     .map_err(|err| match err.error() {

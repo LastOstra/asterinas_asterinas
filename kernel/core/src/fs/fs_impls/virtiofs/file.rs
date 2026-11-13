@@ -156,7 +156,7 @@ impl PerOpenFileOps for VirtioFsFile {
                 .contains(FuseInitFlags2::DIRECT_IO_ALLOW_MMAP);
 
         if !is_mmap_allowed {
-            return_errno_with_message!(Errno::ENODEV, "the file is not mappable");
+            return_errno!(Errno::ENODEV, "the file is not mappable");
         }
 
         self.inode
@@ -171,7 +171,7 @@ impl PerOpenFileOps for VirtioFsFile {
             .open_flags()
             .intersects(FuseOpenFlags::FOPEN_STREAM | FuseOpenFlags::FOPEN_NONSEEKABLE)
         {
-            return_errno_with_message!(Errno::ESPIPE, "the file is not seekable");
+            return_errno!(Errno::ESPIPE, "the file is not seekable");
         }
         Ok(())
     }

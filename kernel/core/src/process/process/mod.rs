@@ -396,7 +396,7 @@ impl Process {
         let mut pid_table = pid_table::pid_table_mut();
 
         if pid_table.contains_process_group(&self.pid) {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EPERM,
                 "a process group leader cannot be moved to a new session"
             );
@@ -495,7 +495,7 @@ impl Process {
                     .clone(),
             )
         } else {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::ESRCH,
                 "the process to set the PGID is neither the current process nor its child process"
             );
@@ -506,7 +506,7 @@ impl Process {
         } else if pgid == process.pid() {
             process.to_new_group(current_session, &mut pid_table)
         } else {
-            return_errno_with_message!(Errno::EPERM, "the new process group does not exist");
+            return_errno!(Errno::EPERM, "the new process group does not exist");
         }
     }
 
@@ -523,13 +523,13 @@ impl Process {
         let session = process_group.session();
 
         if session.sid() == self.pid {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EPERM,
                 "a session leader cannot be moved to a new process group"
             );
         }
         if !Arc::ptr_eq(session, new_process_group.session()) {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EPERM,
                 "the new process group does not belong to the same session"
             );
@@ -538,7 +538,7 @@ impl Process {
             .as_ref()
             .is_some_and(|current| !Arc::ptr_eq(current, session))
         {
-            return_errno_with_message!(Errno::EPERM, "the process belongs to a different session");
+            return_errno!(Errno::EPERM, "the process belongs to a different session");
         }
 
         // Lock order: group with a smaller PGID -> group with a larger PGID
@@ -590,7 +590,7 @@ impl Process {
             .as_ref()
             .is_some_and(|current| !Arc::ptr_eq(current, session))
         {
-            return_errno_with_message!(Errno::EPERM, "the process belongs to a different session");
+            return_errno!(Errno::EPERM, "the process belongs to a different session");
         }
         if process_group.pgid() == self.pid {
             // We'll hit this if the process is a session leader. There is no need to check below.

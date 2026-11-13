@@ -243,7 +243,7 @@ impl Device for Fb {
 
     fn open(&self) -> Result<Box<dyn PerOpenFileOps>> {
         let Some(framebuffer) = FRAMEBUFFER.get() else {
-            return_errno_with_message!(Errno::ENODEV, "the framebuffer device is not present");
+            return_errno!(Errno::ENODEV, "the framebuffer device is not present");
         };
         let framebuffer = framebuffer.clone();
         Ok(Box::new(FbHandle { framebuffer }))
@@ -364,7 +364,7 @@ impl FbHandle {
 
         // Check the size to prevent excessive memory allocation
         if start > MAX_CMAP_SIZE || len > MAX_CMAP_SIZE - start {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "the color map range exceeds its maximum size"
             );
@@ -461,7 +461,7 @@ impl FileOps for FbHandle {
         let io_mem = self.framebuffer.io_mem();
         let size = io_mem.size();
         if offset >= size {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::ENOSPC,
                 "the write offset is beyond the framebuffer size"
             );
@@ -535,7 +535,7 @@ impl PerOpenFileOps for FbHandle {
             PanDisplay | Blank => {
                 // These commands are not supported by efifb.
                 // We return errors according to the Linux behavior.
-                return_errno_with_message!(
+                return_errno!(
                     Errno::EINVAL,
                     "the ioctl command is not supported by efifb devices"
                 )
@@ -545,7 +545,7 @@ impl PerOpenFileOps for FbHandle {
                     "the ioctl command {:#x} is unknown for framebuffer devices",
                     raw_ioctl.cmd()
                 );
-                return_errno_with_message!(Errno::ENOTTY, "the ioctl command is unknown");
+                return_errno!(Errno::ENOTTY, "the ioctl command is unknown");
             }
         })
     }

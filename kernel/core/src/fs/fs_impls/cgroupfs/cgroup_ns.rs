@@ -112,7 +112,7 @@ impl NsCommonOps for CgroupNamespace {
     }
 
     fn parent(&self) -> Result<&Arc<Self>> {
-        return_errno_with_message!(
+        return_errno!(
             Errno::EINVAL,
             "a cgroup namespace does not have a parent namespace"
         );

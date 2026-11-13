@@ -365,7 +365,7 @@ impl Dentry {
         debug_assert_eq!(self.dir_state.is_some(), self.type_ == InodeType::Dir);
 
         let Some(dir_state) = &self.dir_state else {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::ENOTDIR,
                 "the dentry is not related to a directory inode"
             );
@@ -422,7 +422,7 @@ impl DirDentry<'_> {
             if self.revalidate_cached_entry(name, &cached_entry) {
                 return match cached_entry {
                     CachedDentry::Positive { .. } => {
-                        return_errno_with_message!(Errno::EEXIST, "the dentry already exists")
+                        return_errno!(Errno::EEXIST, "the dentry already exists")
                     }
                     CachedDentry::Negative => Ok(children),
                 };
@@ -441,7 +441,7 @@ impl DirDentry<'_> {
                 );
                 let mut children_for_update = children.upgrade();
                 self.insert_positive_child(&mut children_for_update, name, existing_child);
-                return_errno_with_message!(Errno::EEXIST, "the dentry already exists");
+                return_errno!(Errno::EEXIST, "the dentry already exists");
             }
             Err(error) if error.error() == Errno::ENOENT => Ok(children),
             Err(error) => Err(error),
@@ -501,12 +501,12 @@ impl DirDentry<'_> {
             if !self.revalidate_cached_entry(name, &cached_entry) {
                 let _ = children.remove(name);
             } else if cached_entry.is_mountpoint() {
-                return_errno_with_message!(Errno::EBUSY, "dentry is mountpoint");
+                return_errno!(Errno::EBUSY, "dentry is mountpoint");
             } else {
                 return match cached_entry {
                     CachedDentry::Positive { dentry } => Ok(dentry),
                     CachedDentry::Negative => {
-                        return_errno_with_message!(Errno::ENOENT, "found a negative dentry")
+                        return_errno!(Errno::ENOENT, "found a negative dentry")
                     }
                 };
             }
@@ -572,7 +572,7 @@ impl DirDentry<'_> {
                 return match cached_entry {
                     CachedDentry::Positive { dentry } => Ok(dentry),
                     CachedDentry::Negative => {
-                        return_errno_with_message!(Errno::ENOENT, "found a negative dentry")
+                        return_errno!(Errno::ENOENT, "found a negative dentry")
                     }
                 };
             }
@@ -657,7 +657,7 @@ impl DirDentry<'_> {
     /// Deletes a `Dentry` by `unlink()` the inner inode.
     pub(in crate::fs) fn unlink(&self, name: &str) -> Result<()> {
         if is_dot_or_dotdot(name) {
-            return_errno_with_message!(Errno::EISDIR, "unlink on . or ..");
+            return_errno!(Errno::EISDIR, "unlink on . or ..");
         }
 
         let dir_inode = self.inode();
@@ -688,10 +688,10 @@ impl DirDentry<'_> {
     /// Deletes a directory `Dentry` by `rmdir()` the inner inode.
     pub(in crate::fs) fn rmdir(&self, name: &str) -> Result<()> {
         if is_dot(name) {
-            return_errno_with_message!(Errno::EINVAL, "rmdir on .");
+            return_errno!(Errno::EINVAL, "rmdir on .");
         }
         if is_dotdot(name) {
-            return_errno_with_message!(Errno::ENOTEMPTY, "rmdir on ..");
+            return_errno!(Errno::ENOTEMPTY, "rmdir on ..");
         }
 
         let dir_inode = self.inode();
@@ -735,13 +735,13 @@ impl DirDentry<'_> {
             }
             Some(cached_entry) => {
                 if cached_entry.is_mountpoint() {
-                    return_errno_with_message!(Errno::EBUSY, "dentry is mountpoint");
+                    return_errno!(Errno::EBUSY, "dentry is mountpoint");
                 }
 
                 match cached_entry {
                     CachedDentry::Positive { dentry } => Some(dentry),
                     CachedDentry::Negative => {
-                        return_errno_with_message!(Errno::ENOENT, "found a negative dentry")
+                        return_errno!(Errno::ENOENT, "found a negative dentry")
                     }
                 }
             }
@@ -776,13 +776,13 @@ impl DirDentry<'_> {
         mode: RenameMode,
     ) -> Result<()> {
         if is_dot_or_dotdot(old_name) {
-            return_errno_with_message!(Errno::EBUSY, "old_name is . or ..");
+            return_errno!(Errno::EBUSY, "old_name is . or ..");
         }
         if is_dot_or_dotdot(new_name) {
             if mode == RenameMode::NoReplace {
-                return_errno_with_message!(Errno::EEXIST, "new_name is . or ..");
+                return_errno!(Errno::EEXIST, "new_name is . or ..");
             } else {
-                return_errno_with_message!(Errno::EBUSY, "new_name is . or ..");
+                return_errno!(Errno::EBUSY, "new_name is . or ..");
             }
         }
 
@@ -790,7 +790,7 @@ impl DirDentry<'_> {
 
         let max_namelen = old_dir_inode.fs().sb().namelen;
         if old_name.len() > max_namelen || new_name.len() > max_namelen {
-            return_errno_with_message!(Errno::ENAMETOOLONG, "old_name or new_name is too long");
+            return_errno!(Errno::ENAMETOOLONG, "old_name or new_name is too long");
         }
 
         if core::ptr::eq(self.inner, new_dir.inner) {
@@ -799,7 +799,7 @@ impl DirDentry<'_> {
                 match mode {
                     RenameMode::Replace | RenameMode::Exchange => return Ok(()),
                     RenameMode::NoReplace => {
-                        return_errno_with_message!(Errno::EEXIST, "the new path already exists");
+                        return_errno!(Errno::EEXIST, "the new path already exists");
                     }
                 }
             }
@@ -935,7 +935,7 @@ impl DirDentry<'_> {
         new_dentry: Option<&Arc<Dentry>>,
     ) -> Result<()> {
         if old_dentry.type_() == InodeType::Dir && new_dir.is_equal_or_descendant_of(old_dentry) {
-            return_errno_with_message!(Errno::EINVAL, "the new path is inside the old directory");
+            return_errno!(Errno::EINVAL, "the new path is inside the old directory");
         }
 
         if mode == RenameMode::Exchange
@@ -943,7 +943,7 @@ impl DirDentry<'_> {
             && new_dentry.type_() == InodeType::Dir
             && old_dir.is_equal_or_descendant_of(new_dentry)
         {
-            return_errno_with_message!(Errno::EINVAL, "the old path is inside the new directory");
+            return_errno!(Errno::EINVAL, "the old path is inside the new directory");
         }
 
         Ok(())
@@ -952,10 +952,10 @@ impl DirDentry<'_> {
     fn check_rename_mode(mode: RenameMode, new_dentry: Option<&Arc<Dentry>>) -> Result<()> {
         match mode {
             RenameMode::NoReplace if new_dentry.is_some() => {
-                return_errno_with_message!(Errno::EEXIST, "the new path already exists");
+                return_errno!(Errno::EEXIST, "the new path already exists");
             }
             RenameMode::Exchange if new_dentry.is_none() => {
-                return_errno_with_message!(Errno::ENOENT, "the new path does not exist");
+                return_errno!(Errno::ENOENT, "the new path does not exist");
             }
             _ => Ok(()),
         }

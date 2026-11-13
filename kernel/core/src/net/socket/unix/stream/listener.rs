@@ -221,7 +221,7 @@ impl Backlog {
         let mut locked_incoming_conns = self.incoming_conns.lock();
 
         let Some(incoming_conns) = &mut *locked_incoming_conns else {
-            return_errno_with_message!(Errno::EINVAL, "the socket is shut down for reading");
+            return_errno!(Errno::EINVAL, "the socket is shut down for reading");
         };
         let conn = incoming_conns.pop_front();
 

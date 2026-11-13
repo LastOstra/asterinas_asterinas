@@ -357,7 +357,7 @@ pub trait FileOps {
 
     /// Reads directory entries from the given offset.
     fn readdir_at(&self, _offset: usize, _visitor: &mut dyn DirentVisitor) -> Result<usize> {
-        return_errno_with_message!(Errno::ENOTDIR, "readdir is not supported");
+        return_errno!(Errno::ENOTDIR, "readdir is not supported");
     }
 }
 
@@ -669,7 +669,7 @@ pub(crate) trait Inode: Any + FileOps + Send + Sync {
                     {
                         perm -= Permission::MAY_EXEC;
                     } else {
-                        return_errno_with_message!(
+                        return_errno!(
                             Errno::EACCES,
                             "root execute permission denied: no execute bits set"
                         );
@@ -683,20 +683,20 @@ pub(crate) trait Inode: Any + FileOps + Send + Sync {
                 || (perm.may_write() && !mode.is_owner_writable())
                 || (perm.may_exec() && !mode.is_owner_executable())
             {
-                return_errno_with_message!(Errno::EACCES, "owner permission check failed");
+                return_errno!(Errno::EACCES, "owner permission check failed");
             }
         } else if creds.has_group_for_fs_access(metadata.gid) {
             if (perm.may_read() && !mode.is_group_readable())
                 || (perm.may_write() && !mode.is_group_writable())
                 || (perm.may_exec() && !mode.is_group_executable())
             {
-                return_errno_with_message!(Errno::EACCES, "group permission check failed");
+                return_errno!(Errno::EACCES, "group permission check failed");
             }
         } else if (perm.may_read() && !mode.is_other_readable())
             || (perm.may_write() && !mode.is_other_writable())
             || (perm.may_exec() && !mode.is_other_executable())
         {
-            return_errno_with_message!(Errno::EACCES, "other permission check failed");
+            return_errno!(Errno::EACCES, "other permission check failed");
         }
 
         Ok(())

@@ -106,7 +106,7 @@ impl FileCapabilities {
         })?;
 
         if raw_value.len() != revision.xattr_size() {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "the length of file capabilities does not match its revision"
             );
@@ -157,7 +157,7 @@ impl FileCapabilities {
         let start = word_index * size_of::<u32>();
         let end = start + size_of::<u32>();
         let Some(word_bytes) = bytes.get(start..end) else {
-            return_errno_with_message!(Errno::EINVAL, "file capabilities are truncated");
+            return_errno!(Errno::EINVAL, "file capabilities are truncated");
         };
 
         let mut word = [0u8; size_of::<u32>()];

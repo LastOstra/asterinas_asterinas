@@ -30,7 +30,7 @@ impl<Message: 'static> BoundNetlink<Message> {
 
     pub(in netlink) fn bind_common(&mut self, endpoint: &NetlinkSocketAddr) -> Result<()> {
         if endpoint.port() != self.handle.port() {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "the socket cannot be bound to a different port"
             );

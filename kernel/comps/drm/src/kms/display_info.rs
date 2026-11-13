@@ -18,7 +18,7 @@ pub struct DrmDisplayInfo {
 impl DrmDisplayInfo {
     pub fn from_dpi(resolution: DrmSize, dpi: u32, subpixel_order: SubpixelOrder) -> Result<Self> {
         if dpi == 0 {
-            return_errno_with_message!(Errno::EINVAL, "the display DPI must be nonzero");
+            return_errno!(Errno::EINVAL, "the display DPI must be nonzero");
         }
 
         fn pixels_to_mm(pixels: u32, dpi: u32) -> Result<u32> {

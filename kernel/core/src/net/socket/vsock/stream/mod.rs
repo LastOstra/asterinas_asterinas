@@ -117,17 +117,17 @@ impl VsockStreamSocket {
                 if let Some(error) = init_stream.test_and_clear_error(&self.pollee) {
                     return Err(error);
                 }
-                return_errno_with_message!(
+                return_errno!(
                     Errno::ECONNABORTED,
                     "the error code for the connection failure is not available"
                 );
             }
             State::Connecting(_) => {
-                return_errno_with_message!(Errno::EAGAIN, "the socket is connecting")
+                return_errno!(Errno::EAGAIN, "the socket is connecting")
             }
             State::Connected(connected_stream) => connected_stream.finish_last_connect(),
             State::Listen(_) => {
-                return_errno_with_message!(Errno::EISCONN, "the socket is listening")
+                return_errno!(Errno::EISCONN, "the socket is listening")
             }
         }
     }
@@ -135,7 +135,7 @@ impl VsockStreamSocket {
     fn try_accept(&self, is_nonblocking: bool) -> Result<(Arc<dyn FileLike>, SocketAddr)> {
         let state = self.lock_updated_state();
         let State::Listen(listen_stream) = state.as_ref() else {
-            return_errno_with_message!(Errno::EINVAL, "the socket is not listening");
+            return_errno!(Errno::EINVAL, "the socket is not listening");
         };
 
         let connected = listen_stream.try_accept()?;
@@ -155,7 +155,7 @@ impl VsockStreamSocket {
     fn try_send(&self, reader: &mut dyn MultiRead, flags: SendFlags) -> Result<usize> {
         let mut state = self.lock_updated_state();
         let State::Connected(connected_stream) = state.as_mut() else {
-            return_errno_with_message!(Errno::ENOTCONN, "the socket is not connected");
+            return_errno!(Errno::ENOTCONN, "the socket is not connected");
         };
 
         connected_stream.try_send(reader, flags)
@@ -164,7 +164,7 @@ impl VsockStreamSocket {
     fn try_recv(&self, writer: &mut dyn MultiWrite, flags: RecvFlags) -> Result<usize> {
         let mut state = self.lock_updated_state();
         let State::Connected(connected_stream) = state.as_mut() else {
-            return_errno_with_message!(Errno::ENOTCONN, "the socket is not connected");
+            return_errno!(Errno::ENOTCONN, "the socket is not connected");
         };
 
         connected_stream.try_recv(writer, flags)
@@ -242,7 +242,7 @@ impl Socket for VsockStreamSocket {
 
         let mut state = self.lock_updated_state();
         let State::Init(init_stream) = state.as_mut() else {
-            return_errno_with_message!(Errno::EINVAL, "the socket is already bound to an address");
+            return_errno!(Errno::EINVAL, "the socket is already bound to an address");
         };
 
         init_stream.bind(addr)
@@ -301,11 +301,11 @@ impl Socket for VsockStreamSocket {
         match state.as_mut() {
             State::Init(init_stream) => init_stream.shutdown(cmd),
             State::Connecting(_) => {
-                return_errno_with_message!(Errno::ENOTCONN, "the socket is not connected")
+                return_errno!(Errno::ENOTCONN, "the socket is not connected")
             }
             State::Connected(connected_stream) => connected_stream.shutdown(cmd),
             State::Listen(_) => {
-                return_errno_with_message!(Errno::ENOTCONN, "the socket is not connected")
+                return_errno!(Errno::ENOTCONN, "the socket is not connected")
             }
         }
     }
@@ -326,7 +326,7 @@ impl Socket for VsockStreamSocket {
     fn peer_addr(&self) -> Result<SocketAddr> {
         let state = self.lock_updated_state();
         let State::Connected(connected_stream) = state.as_ref() else {
-            return_errno_with_message!(Errno::ENOTCONN, "the socket is not connected");
+            return_errno!(Errno::ENOTCONN, "the socket is not connected");
         };
 
         Ok(connected_stream.remote_addr().into())
@@ -344,7 +344,7 @@ impl Socket for VsockStreamSocket {
         });
 
         // TODO: Support getting other socket options
-        return_errno_with_message!(Errno::EOPNOTSUPP, "the socket option to be get is unknown");
+        return_errno!(Errno::EOPNOTSUPP, "the socket option to be get is unknown");
     }
 
     fn sendmsg(
@@ -371,13 +371,13 @@ impl Socket for VsockStreamSocket {
             let state = self.lock_updated_state();
             match state.as_ref() {
                 State::Init(_) | State::Listen(_) | State::Connecting(_) => {
-                    return_errno_with_message!(
+                    return_errno!(
                         Errno::EOPNOTSUPP,
                         "sending to a specific address is not allowed on vsock stream sockets"
                     );
                 }
                 State::Connected(_) => {
-                    return_errno_with_message!(
+                    return_errno!(
                         Errno::EISCONN,
                         "sending to a specific address is not allowed on vsock stream sockets"
                     );

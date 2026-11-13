@@ -23,7 +23,7 @@ pub(super) fn sys_move_mount(
     let flags = MoveMountFlags::try_from(flags)?;
     let supported_flags = MoveMountFlags::MOVE_MOUNT_F_EMPTY_PATH;
     if !(flags - supported_flags).is_empty() {
-        return_errno_with_message!(Errno::EOPNOTSUPP, "unsupported move_mount flags");
+        return_errno!(Errno::EOPNOTSUPP, "unsupported move_mount flags");
     }
     super::mount::check_mount_api_capability(ctx)?;
 
@@ -32,7 +32,7 @@ pub(super) fn sys_move_mount(
         .read_cstring(from_path_addr, MAX_FILENAME_LEN)?;
     let source = if from_path.is_empty() {
         if !flags.contains(MoveMountFlags::MOVE_MOUNT_F_EMPTY_PATH) {
-            return_errno_with_message!(Errno::ENOENT, "the source path is empty");
+            return_errno!(Errno::ENOENT, "the source path is empty");
         }
         MoveMountSource::Detached(get_detached_mount(from_dfd, ctx)?)
     } else {

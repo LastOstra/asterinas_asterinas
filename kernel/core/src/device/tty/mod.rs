@@ -144,7 +144,7 @@ impl<D: TtyDriver> Tty<D> {
                 &mut echo,
             );
             if res.is_err() && len == 0 {
-                return_errno_with_message!(Errno::EAGAIN, "the line discipline is full");
+                return_errno!(Errno::EAGAIN, "the line discipline is full");
             } else if res.is_err() {
                 break;
             } else {
@@ -208,7 +208,7 @@ impl<D: TtyDriver> Tty<D> {
 
     pub(crate) fn write(&self, reader: &mut VmReader, status_flags: StatusFlags) -> Result<usize> {
         if self.tty_flags.is_other_closed() {
-            return_errno_with_message!(Errno::EIO, "the TTY is closed");
+            return_errno!(Errno::EIO, "the TTY is closed");
         }
 
         let mut buf = vec![0u8; reader.remain().min(IO_CAPACITY)];
@@ -312,7 +312,7 @@ impl<D: TtyDriver> Tty<D> {
             }
             cmd @ GetNumBytesToRead => {
                 if self.tty_flags.is_other_closed() {
-                    return_errno_with_message!(Errno::EIO, "the TTY is closed");
+                    return_errno!(Errno::EIO, "the TTY is closed");
                 }
 
                 let buffer_len = self.ldisc.lock().buffer_len() as i32;
@@ -333,7 +333,7 @@ impl<D: TtyDriver> Tty<D> {
                     return Ok(0);
                 }
 
-                return_errno_with_message!(Errno::ENOTTY, "the ioctl command is unknown");
+                return_errno!(Errno::ENOTTY, "the ioctl command is unknown");
             }
         });
 

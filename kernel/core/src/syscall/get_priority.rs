@@ -35,7 +35,7 @@ pub(super) fn sys_get_priority(which: i32, who: u32, ctx: &Context) -> Result<Sy
 pub(super) fn get_processes(prio_target: PriorityTarget) -> Result<Vec<Arc<Process>>> {
     let processes = collect_processes(prio_target);
     if processes.is_empty() {
-        return_errno_with_message!(Errno::ESRCH, "the target process does not exist");
+        return_errno!(Errno::ESRCH, "the target process does not exist");
     }
     Ok(processes)
 }

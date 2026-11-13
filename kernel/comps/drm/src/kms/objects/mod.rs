@@ -219,7 +219,7 @@ impl DrmKmsObjectStore {
         }
 
         if self.lookup_encoder_by_id(id).is_some() {
-            return_errno_with_message!(Errno::EINVAL, "the DRM encoder has no property table");
+            return_errno!(Errno::EINVAL, "the DRM encoder has no property table");
         }
 
         Ok(None)

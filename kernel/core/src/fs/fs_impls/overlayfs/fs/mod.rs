@@ -134,7 +134,7 @@ impl FileSystem for OverlayFs {
             return_errno!(Errno::EROFS);
         }
         if flags != current_flags {
-            return_errno_with_message!(Errno::EINVAL, "unsupported overlayfs remount delta");
+            return_errno!(Errno::EINVAL, "unsupported overlayfs remount delta");
         }
         Ok(())
     }

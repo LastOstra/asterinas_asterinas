@@ -68,7 +68,7 @@ impl dyn Terminal {
             cmd @ SetForegroundPgid => {
                 let pgid = cmd.read()?;
                 if pgid.cast_signed() < 0 {
-                    return_errno_with_message!(Errno::EINVAL, "negative PGIDs are not valid");
+                    return_errno!(Errno::EINVAL, "negative PGIDs are not valid");
                 }
 
                 self.set_foreground(pgid, &current!())?;
@@ -84,7 +84,7 @@ impl dyn Terminal {
             }
             _cmd @ SetControlNoTty => {
                 if via_master {
-                    return_errno_with_message!(
+                    return_errno!(
                         Errno::ENOTTY,
                         "the terminal to operate is not our controlling terminal"
                     );
@@ -128,7 +128,7 @@ impl dyn Terminal {
         let session = process_group.session();
 
         if !session.is_leader(process) {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EPERM,
                 "the process who sets the controlling terminal is not a session leader"
             );
@@ -140,7 +140,7 @@ impl dyn Terminal {
             if Arc::ptr_eq(session_terminal, &self) {
                 return Ok(());
             }
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EPERM,
                 "the session already has a controlling terminal"
             );
@@ -188,14 +188,14 @@ impl dyn Terminal {
 
         self.is_control_and(process, |session, _| {
             let Some(process_group) = pid_table.get_process_group(&pgid) else {
-                return_errno_with_message!(
+                return_errno!(
                     Errno::ESRCH,
                     "the process group to be foreground does not exist"
                 );
             };
 
             if !Arc::ptr_eq(session, process_group.session()) {
-                return_errno_with_message!(
+                return_errno!(
                     Errno::EPERM,
                     "the process group to be foreground belongs to a different session"
                 );
@@ -226,7 +226,7 @@ impl dyn Terminal {
             .terminal()
             .is_some_and(|session_terminal| Arc::ptr_eq(session_terminal, self))
         {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::ENOTTY,
                 "the terminal to operate is not our controlling terminal"
             );

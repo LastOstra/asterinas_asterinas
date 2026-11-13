@@ -27,7 +27,7 @@ pub(super) fn sys_capget(
         if cap_user_data_addr == 0 {
             return Ok(SyscallReturn::Return(0));
         }
-        return_errno_with_message!(
+        return_errno!(
             Errno::EINVAL,
             "capability versions other than v3 are not supported"
         );
@@ -38,7 +38,7 @@ pub(super) fn sys_capget(
     }
 
     if cap_user_header.pid.cast_signed() < 0 {
-        return_errno_with_message!(Errno::EINVAL, "negative PIDs are not valid");
+        return_errno!(Errno::EINVAL, "negative PIDs are not valid");
     }
 
     let credentials = if cap_user_header.pid != 0 {

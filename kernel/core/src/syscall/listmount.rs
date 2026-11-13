@@ -50,12 +50,12 @@ pub(super) fn sys_listmount(
     );
 
     if flags & !LISTMOUNT_REVERSE != 0 {
-        return_errno_with_message!(Errno::EINVAL, "invalid listmount flags");
+        return_errno!(Errno::EINVAL, "invalid listmount flags");
     }
     let reverse = flags & LISTMOUNT_REVERSE != 0;
 
     if nr_mnt_ids > LISTMOUNT_NR_LIMIT {
-        return_errno_with_message!(Errno::EOVERFLOW, "nr_mnt_ids too large");
+        return_errno!(Errno::EOVERFLOW, "nr_mnt_ids too large");
     }
 
     let user_space = ctx.user_space();
@@ -66,16 +66,16 @@ pub(super) fn sys_listmount(
 
     let req: MntIdReq = user_space.read_val(req_ptr)?;
     if req.size != MNT_ID_REQ_SIZE_VER0 {
-        return_errno_with_message!(Errno::EINVAL, "unsupported mnt_id_req size");
+        return_errno!(Errno::EINVAL, "unsupported mnt_id_req size");
     }
     if req.spare != 0 {
-        return_errno_with_message!(Errno::EINVAL, "non-zero spare field");
+        return_errno!(Errno::EINVAL, "non-zero spare field");
     }
     if req.mnt_id != LSMT_ROOT && req.mnt_id < MNT_UNIQUE_ID_MIN {
-        return_errno_with_message!(Errno::EINVAL, "mnt_id is not a valid unique mount ID");
+        return_errno!(Errno::EINVAL, "mnt_id is not a valid unique mount ID");
     }
     if req.param != 0 && req.param < MNT_UNIQUE_ID_MIN {
-        return_errno_with_message!(Errno::EINVAL, "param is not a valid unique mount ID");
+        return_errno!(Errno::EINVAL, "param is not a valid unique mount ID");
     }
 
     let ns_proxy = ctx.thread_local.borrow_ns_proxy();

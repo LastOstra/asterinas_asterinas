@@ -37,11 +37,11 @@ pub(super) fn sys_statx(
     if flags.contains(StatxFlags::AT_STATX_FORCE_SYNC)
         && flags.contains(StatxFlags::AT_STATX_DONT_SYNC)
     {
-        return_errno_with_message!(Errno::EINVAL, "invalid statx flags");
+        return_errno!(Errno::EINVAL, "invalid statx flags");
     }
 
     if mask.contains(StatxMask::STATX_RESERVED) {
-        return_errno_with_message!(
+        return_errno!(
             Errno::EINVAL,
             "mask reserved for future struct statx expansion"
         );

@@ -53,7 +53,7 @@ impl LsmAlienAccessHook for YamaLsm {
         };
 
         if is_denied {
-            return_errno_with_message!(Errno::EPERM, "alien access is denied due to Yama scope");
+            return_errno!(Errno::EPERM, "alien access is denied due to Yama scope");
         }
 
         Ok(())

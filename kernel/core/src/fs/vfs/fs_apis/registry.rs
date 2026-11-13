@@ -201,7 +201,7 @@ impl<'a> FsCreationCtx<'a> {
             .lookup(&fs_path)?;
 
         if !path.type_().is_device() {
-            return_errno_with_message!(Errno::ENODEV, "the path is not a device file");
+            return_errno!(Errno::ENODEV, "the path is not a device file");
         }
         let id = path.metadata()?.self_dev_id;
 
@@ -355,7 +355,7 @@ impl<K: Eq + Ord + Clone + Send + Sync + 'static> FsCache<K> {
                     let extant_readonly = fs_and_root.fs.flags().contains(FsFlags::RDONLY);
                     let requested_readonly = required_flags.contains(FsFlags::RDONLY);
                     if extant_readonly != requested_readonly {
-                        return_errno_with_message!(
+                        return_errno!(
                             Errno::EBUSY,
                             "the read-only flag of the extant file system does not match"
                         );
@@ -414,7 +414,7 @@ impl FsRegistry {
     fn register(&self, new_type: &'static dyn DynFsType) -> Result<()> {
         let mut fs_table = self.fs_table.lock();
         if fs_table.contains_key(new_type.name()) {
-            return_errno_with_message!(Errno::EEXIST, "the file system type already exists");
+            return_errno!(Errno::EEXIST, "the file system type already exists");
         }
 
         if let Some(node) = new_type.sysnode() {

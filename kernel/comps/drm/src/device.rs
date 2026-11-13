@@ -114,7 +114,7 @@ impl RegisteredDrmDevice {
             .as_ref()
             .filter(|master| master.owner_client_id == client_id)
         else {
-            return_errno_with_message!(Errno::EACCES, "the DRM client is not the current master");
+            return_errno!(Errno::EACCES, "the DRM client is not the current master");
         };
 
         current_master.authenticate_magic(magic)
@@ -148,7 +148,7 @@ impl RegisteredDrmDevice {
                 if current_master.owner_client_id == client_id {
                     Ok(current_master.clone())
                 } else {
-                    return_errno_with_message!(
+                    return_errno!(
                         Errno::EBUSY,
                         "another DRM client is already the current master"
                     )
@@ -157,7 +157,7 @@ impl RegisteredDrmDevice {
             None => {
                 let master = match retained_master {
                     Some(retained) if retained.owner_client_id == client_id => retained.clone(),
-                    Some(_) => return_errno_with_message!(
+                    Some(_) => return_errno!(
                         Errno::EINVAL,
                         "the retained DRM master belongs to another client"
                     ),
@@ -179,7 +179,7 @@ impl RegisteredDrmDevice {
             .as_ref()
             .is_some_and(|master| master.owner_client_id == client_id)
         {
-            return_errno_with_message!(Errno::EINVAL, "the DRM client is not the current master");
+            return_errno!(Errno::EINVAL, "the DRM client is not the current master");
         }
         *master = None;
 
@@ -205,7 +205,7 @@ impl RegisteredDrmDevice {
 
     fn mmap_offset_space(&self) -> Result<&Mutex<DrmGemMmapOffsetSpace>> {
         if self.device.as_gem_ops().is_none() {
-            return_errno_with_message!(Errno::EOPNOTSUPP, "the DRM device does not support GEM");
+            return_errno!(Errno::EOPNOTSUPP, "the DRM device does not support GEM");
         }
 
         Ok(self
@@ -222,7 +222,7 @@ struct DrmDeviceIndex(u32);
 impl DrmDeviceIndex {
     fn alloc() -> Result<Self> {
         let Some(index) = DRM_DEVICE_INDEX_ALLOCATOR.lock().alloc() else {
-            return_errno_with_message!(Errno::ENOMEM, "no DRM device indices are available");
+            return_errno!(Errno::ENOMEM, "no DRM device indices are available");
         };
 
         Ok(Self(index))
@@ -269,7 +269,7 @@ impl DrmMaster {
     pub(super) fn allocate_magic(&self, authenticated: &Arc<AtomicBool>) -> Result<u32> {
         let mut state = self.magic_state.lock();
         let Some(magic) = state.allocator.alloc() else {
-            return_errno_with_message!(Errno::ENOMEM, "no DRM magic identifiers are available");
+            return_errno!(Errno::ENOMEM, "no DRM magic identifiers are available");
         };
         state
             .magic_table
@@ -285,7 +285,7 @@ impl DrmMaster {
             .remove(&magic)
             .and_then(|authenticated| authenticated.upgrade())
         else {
-            return_errno_with_message!(Errno::EINVAL, "the DRM magic identifier is invalid");
+            return_errno!(Errno::EINVAL, "the DRM magic identifier is invalid");
         };
 
         authenticated.store(true, Ordering::Relaxed);

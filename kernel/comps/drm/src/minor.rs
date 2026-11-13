@@ -102,7 +102,7 @@ impl DrmMinor {
 
     fn check_primary(&self) -> Result<()> {
         if !matches!(self.type_, DrmMinorType::Primary) {
-            return_errno_with_message!(Errno::EACCES, "the DRM operation requires a primary node");
+            return_errno!(Errno::EACCES, "the DRM operation requires a primary node");
         }
 
         Ok(())

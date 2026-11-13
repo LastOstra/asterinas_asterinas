@@ -232,7 +232,7 @@ impl ConnectionInner {
 
         if state.phase != Phase::Connecting {
             state.active_rst(self);
-            return_errno_with_message!(Errno::EISCONN, "the connection is established");
+            return_errno!(Errno::EISCONN, "the connection is established");
         }
 
         state.update_peer_credit(self, header);
@@ -304,13 +304,13 @@ impl ConnectionInner {
             // We don't check `local_read_closed` because the peer cannot immediately know this
             // information.
             state.active_rst(self);
-            return_errno_with_message!(Errno::ENOTCONN, "the connection is not established");
+            return_errno!(Errno::ENOTCONN, "the connection is not established");
         }
 
         let len = packet.payload_len();
         if state.rx_queue.used_bytes + len > DEFAULT_RX_BUF_SIZE {
             state.active_rst(self);
-            return_errno_with_message!(Errno::ENOMEM, "the receive queue is full");
+            return_errno!(Errno::ENOMEM, "the receive queue is full");
         }
 
         state.update_peer_credit(self, header);
@@ -334,7 +334,7 @@ impl ConnectionInner {
 
         if state.phase == Phase::Connecting {
             state.active_rst(self);
-            return_errno_with_message!(Errno::ENOTCONN, "the connection is not established");
+            return_errno!(Errno::ENOTCONN, "the connection is not established");
         }
 
         state.update_peer_credit(self, header);
@@ -349,7 +349,7 @@ impl ConnectionInner {
 
         if state.phase == Phase::Connecting {
             state.active_rst(self);
-            return_errno_with_message!(Errno::ENOTCONN, "the connection is not established");
+            return_errno!(Errno::ENOTCONN, "the connection is not established");
         }
 
         state.update_peer_credit(self, header);

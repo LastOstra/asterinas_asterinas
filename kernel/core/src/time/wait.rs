@@ -72,7 +72,7 @@ impl<'a> TimeoutExt<'a> {
     pub(crate) fn check_expired(&self) -> Result<Option<&ManagedTimeout<'a>>> {
         match self {
             TimeoutExt::At(inner) if inner.is_expired() => {
-                return_errno_with_message!(Errno::ETIME, "the time limit is reached")
+                return_errno!(Errno::ETIME, "the time limit is reached")
             }
             TimeoutExt::At(inner) => Ok(Some(inner)),
             TimeoutExt::Never => Ok(None),
@@ -196,7 +196,7 @@ impl WaitTimeout for Waiter {
                     .as_ref()
                     .is_some_and(|timer| timer.lock().remain() == Duration::ZERO)
                 {
-                    return_errno_with_message!(Errno::ETIME, "the time limit is reached");
+                    return_errno!(Errno::ETIME, "the time limit is reached");
                 }
 
                 cancel_cond()

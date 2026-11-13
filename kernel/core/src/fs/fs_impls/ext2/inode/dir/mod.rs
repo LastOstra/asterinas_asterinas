@@ -281,7 +281,7 @@ impl Inode {
             let old_inner = guards.inner(old_inode.ino());
             let parent_ino = old_inner.find_entry_info("..")?.ino;
             if parent_ino != self.ino {
-                return_errno_with_message!(Errno::EIO, "dotdot entry inconsistent with source dir");
+                return_errno!(Errno::EIO, "dotdot entry inconsistent with source dir");
             }
         }
 

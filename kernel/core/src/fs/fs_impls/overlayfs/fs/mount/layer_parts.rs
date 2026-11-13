@@ -48,7 +48,7 @@ impl MountRoots {
         // The pair is all-or-nothing before `MountOptions` is usable, so this guard only keeps the
         // unreachable mixed shape from reaching the resolutions below.
         if options.upper_dir.is_some() != options.work_dir.is_some() {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "the `workdir` mount option is required if and only if `upperdir` is specified"
             );
@@ -90,7 +90,7 @@ impl MountRoots {
                 .downcast_ref::<OverlayFs>()
                 .is_some()
         {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "the overlay upperdir must not be on an overlayfs"
             );
@@ -187,7 +187,7 @@ fn resolve_root_dir(ctx: &Context, raw_path: &str, not_dir_msg: &'static str) ->
         .read()
         .lookup_no_follow(&fs_path)?;
     if !path.type_().is_directory() {
-        return_errno_with_message!(Errno::ENOTDIR, not_dir_msg);
+        return_errno!(Errno::ENOTDIR, not_dir_msg);
     }
     Ok(path)
 }

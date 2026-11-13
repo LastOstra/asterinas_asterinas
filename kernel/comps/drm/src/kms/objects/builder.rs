@@ -141,7 +141,7 @@ impl DrmKmsObjectStoreBuilder {
         crtc_index: KmsObjectIndex,
     ) -> Result<()> {
         if self.crtcs.get(crtc_index.get()).is_none() {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "the CRTC index does not refer to a declared CRTC"
             );
@@ -162,7 +162,7 @@ impl DrmKmsObjectStoreBuilder {
         crtc_index: KmsObjectIndex,
     ) -> Result<()> {
         if self.crtcs.get(crtc_index.get()).is_none() {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "the CRTC index does not refer to a declared CRTC"
             );
@@ -183,7 +183,7 @@ impl DrmKmsObjectStoreBuilder {
         encoder_index: KmsObjectIndex,
     ) -> Result<()> {
         if self.encoders.get(encoder_index.get()).is_none() {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "the encoder index does not refer to a declared encoder"
             );
@@ -278,13 +278,13 @@ impl DrmKmsObjectStoreBuilder {
 
     fn validate_topology(&self) -> Result<()> {
         if self.crtcs.is_empty() {
-            return_errno_with_message!(Errno::EINVAL, "the KMS topology has no CRTCs");
+            return_errno!(Errno::EINVAL, "the KMS topology has no CRTCs");
         }
 
         let mut used_primary_planes = KmsObjectMask::ZERO;
         for (crtc_index, crtc) in self.crtcs.iter().enumerate() {
             if used_primary_planes.replace(crtc.primary_plane.get(), true) {
-                return_errno_with_message!(
+                return_errno!(
                     Errno::EINVAL,
                     "the KMS primary plane is shared by multiple CRTCs"
                 );
@@ -296,13 +296,13 @@ impl DrmKmsObjectStoreBuilder {
                 .ok_or(Errno::EINVAL)?;
 
             if primary_plane.type_ != DrmPlaneType::Primary {
-                return_errno_with_message!(
+                return_errno!(
                     Errno::EINVAL,
                     "the CRTC primary plane is not a primary plane"
                 );
             }
             if !primary_plane.possible_crtcs[crtc_index] {
-                return_errno_with_message!(
+                return_errno!(
                     Errno::EINVAL,
                     "the CRTC primary plane is not attached to the CRTC"
                 );
@@ -312,13 +312,10 @@ impl DrmKmsObjectStoreBuilder {
                 let cursor_plane = self.planes.get(cursor_plane.get()).ok_or(Errno::EINVAL)?;
 
                 if cursor_plane.type_ != DrmPlaneType::Cursor {
-                    return_errno_with_message!(
-                        Errno::EINVAL,
-                        "the CRTC cursor plane is not a cursor plane"
-                    );
+                    return_errno!(Errno::EINVAL, "the CRTC cursor plane is not a cursor plane");
                 }
                 if !cursor_plane.possible_crtcs[crtc_index] {
-                    return_errno_with_message!(
+                    return_errno!(
                         Errno::EINVAL,
                         "the CRTC cursor plane is not attached to the CRTC"
                     );
@@ -332,7 +329,7 @@ impl DrmKmsObjectStoreBuilder {
 
 fn next_object_index(object_count: usize) -> Result<KmsObjectIndex> {
     if object_count >= MAX_OBJECTS_PER_TYPE {
-        return_errno_with_message!(Errno::EINVAL, "too many KMS objects of one type");
+        return_errno!(Errno::EINVAL, "too many KMS objects of one type");
     }
 
     Ok(KmsObjectIndex::new(object_count))

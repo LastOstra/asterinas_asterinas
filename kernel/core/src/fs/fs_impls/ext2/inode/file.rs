@@ -60,7 +60,7 @@ impl Inode {
         let read_len = writer.avail();
         if !is_block_aligned(offset) || !is_block_aligned(read_len) {
             // TODO: Implement a fallback mechanism.
-            return_errno_with_message!(Errno::EINVAL, "not block-aligned");
+            return_errno!(Errno::EINVAL, "not block-aligned");
         }
         if read_len == 0 {
             return Ok(0);
@@ -87,7 +87,7 @@ impl Inode {
 
         if !is_block_aligned(offset) || !is_block_aligned(write_len) {
             // TODO: Implement a fallback mechanism.
-            return_errno_with_message!(Errno::EINVAL, "not block-aligned");
+            return_errno!(Errno::EINVAL, "not block-aligned");
         }
 
         let fs = self.fs()?;
@@ -166,7 +166,7 @@ impl Inode {
                 }
             }
             _ => {
-                return_errno_with_message!(
+                return_errno!(
                     Errno::EOPNOTSUPP,
                     "fallocate with the specified flags is not supported"
                 );
@@ -397,7 +397,7 @@ impl InodeInner {
                     // prevent stale data exposure. We pre-allocate in `prepare_write`
                     // so holes here indicate a bug. Stale-read is not a concern
                     // because our inode-level lock serializes reads after this write.
-                    return_errno_with_message!(Errno::EIO, "unexpected hole in direct write path");
+                    return_errno!(Errno::EIO, "unexpected hole in direct write path");
                 }
             }
         }
@@ -444,7 +444,7 @@ impl InodeInner {
             _ => u32::MAX as usize,
         };
         if new_size > max_size {
-            return_errno_with_message!(Errno::EFBIG, "inode size exceeds ext2 maximum");
+            return_errno!(Errno::EFBIG, "inode size exceeds ext2 maximum");
         }
 
         Ok(())

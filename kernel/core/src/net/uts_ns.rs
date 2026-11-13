@@ -202,7 +202,7 @@ impl NsCommonOps for UtsNamespace {
     }
 
     fn parent(&self) -> Result<&Arc<Self>> {
-        return_errno_with_message!(
+        return_errno!(
             Errno::EINVAL,
             "a UTS namespace does not have a parent namespace"
         );

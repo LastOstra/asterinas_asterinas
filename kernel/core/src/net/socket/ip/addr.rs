@@ -11,7 +11,7 @@ impl TryFrom<SocketAddr> for IpEndpoint {
         match value {
             SocketAddr::IPv4(addr, port) => Ok(IpEndpoint::new(addr.into(), port)),
             SocketAddr::IPv6(addr, port) => Ok(IpEndpoint::new(addr.into(), port)),
-            _ => return_errno_with_message!(
+            _ => return_errno!(
                 Errno::EAFNOSUPPORT,
                 "the address is in an unsupported address family"
             ),

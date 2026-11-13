@@ -16,7 +16,7 @@ pub(super) fn sys_set_robust_list(
     );
 
     if len != size_of::<RobustListHead>() {
-        return_errno_with_message!(
+        return_errno!(
             Errno::EINVAL,
             "the length is not equal to the size of the robust list head"
         );

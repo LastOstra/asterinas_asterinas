@@ -78,7 +78,7 @@ pub(super) fn ensure_distinct_non_overlapping(a: &Arc<Dentry>, b: &Arc<Dentry>) 
         || a.is_equal_or_descendant_of(b)
         || b.is_equal_or_descendant_of(a)
     {
-        return_errno_with_message!(
+        return_errno!(
             Errno::EINVAL,
             "overlay roots must be distinct and must not be nested"
         );

@@ -46,7 +46,7 @@ impl datagram_common::Bound for BoundNetlinkUevent {
         }
 
         if *remote != NetlinkSocketAddr::new_unspecified() {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::ECONNREFUSED,
                 "sending uevent messages to user space is not supported"
             );

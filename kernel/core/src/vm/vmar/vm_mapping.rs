@@ -231,7 +231,7 @@ impl VmMapping {
             MappedMemory::Vmo(mapped_vmo) => mapped_vmo,
             MappedMemory::Anonymous => return Ok(None),
             MappedMemory::Device(_) => {
-                return_errno_with_message!(
+                return_errno!(
                     Errno::EFAULT,
                     "shared futexes on device mappings are not supported"
                 );
@@ -448,7 +448,7 @@ impl VmMapping {
         }
 
         if !perms.contains(page_fault_info.required_perms) {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EACCES,
                 "the mapping does not have the required permissions"
             );
@@ -528,7 +528,7 @@ impl VmMapping {
                 Some(VmQueriedItem::MappedIoMem { .. }) => {
                     // The page of I/O memory is populated when the memory
                     // mapping is created.
-                    return_errno_with_message!(
+                    return_errno!(
                         Errno::EFAULT,
                         "device memory page faults cannot be resolved"
                     );

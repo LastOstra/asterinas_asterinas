@@ -74,7 +74,7 @@ pub(super) fn sys_timer_create(
                     })?;
                     let posix_thread = thread.as_posix_thread().unwrap();
                     if posix_thread.process().pid() != ctx.process.pid() {
-                        return_errno_with_message!(
+                        return_errno!(
                             Errno::EINVAL,
                             "the target thread does not belong to the current process"
                         );
@@ -102,7 +102,7 @@ pub(super) fn sys_timer_create(
     let timer = create_timer(clockid, func, ctx)?;
 
     let Some(timer_id) = ctx.process.timer_manager().add_posix_timer(timer) else {
-        return_errno_with_message!(Errno::EAGAIN, "timer IDs are exhausted");
+        return_errno!(Errno::EAGAIN, "timer IDs are exhausted");
     };
     if let Err(error) = ctx.user_space().write_val(timer_id_addr, &timer_id) {
         let _ = ctx.process.timer_manager().remove_posix_timer(timer_id);
@@ -113,7 +113,7 @@ pub(super) fn sys_timer_create(
 
 pub(super) fn sys_timer_delete(timer_id: timer_t, ctx: &Context) -> Result<SyscallReturn> {
     let Some(timer) = ctx.process.timer_manager().remove_posix_timer(timer_id) else {
-        return_errno_with_message!(Errno::EINVAL, "invalid timer ID");
+        return_errno!(Errno::EINVAL, "invalid timer ID");
     };
 
     timer.lock().cancel();
@@ -175,7 +175,7 @@ where
         ClockId::CLOCK_REALTIME => RealTimeClock::timer_manager().create_timer(func),
         ClockId::CLOCK_MONOTONIC => MonotonicClock::timer_manager().create_timer(func),
         ClockId::CLOCK_BOOTTIME => BootTimeClock::timer_manager().create_timer(func),
-        _ => return_errno_with_message!(Errno::EINVAL, "invalid clock ID"),
+        _ => return_errno!(Errno::EINVAL, "invalid clock ID"),
     };
     Ok(timer)
 }

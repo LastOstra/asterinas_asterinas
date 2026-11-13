@@ -112,7 +112,7 @@ impl FileOps for MemFile {
             MemFile::Null => Ok(0),
             MemFile::Random => getrandom(writer),
             MemFile::Urandom => geturandom(writer),
-            _ => return_errno_with_message!(Errno::EINVAL, "read is not supported yet"),
+            _ => return_errno!(Errno::EINVAL, "read is not supported yet"),
         }
     }
 
@@ -129,9 +129,9 @@ impl FileOps for MemFile {
                 Ok(len)
             }
             MemFile::Full => {
-                return_errno_with_message!(Errno::ENOSPC, "no space left on /dev/full")
+                return_errno!(Errno::ENOSPC, "no space left on /dev/full")
             }
-            _ => return_errno_with_message!(Errno::EINVAL, "write is not supported yet"),
+            _ => return_errno!(Errno::EINVAL, "write is not supported yet"),
         }
     }
 }

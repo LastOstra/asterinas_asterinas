@@ -40,7 +40,7 @@ impl LsmCapabilityHook for CapabilityLsm {
             return Ok(());
         }
 
-        return_errno_with_message!(
+        return_errno!(
             Errno::EPERM,
             "the thread does not have the required capability"
         );
@@ -75,7 +75,7 @@ impl LsmAlienAccessHook for CapabilityLsm {
             return Ok(());
         }
 
-        return_errno_with_message!(
+        return_errno!(
             Errno::EPERM,
             "the calling process does not have the required permissions"
         );

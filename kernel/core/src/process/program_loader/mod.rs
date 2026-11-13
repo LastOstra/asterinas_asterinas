@@ -64,7 +64,7 @@ impl UndetectedExecutable {
         let script_path = match self.script_path {
             ShebangScriptPath::Accessible(path) => path,
             ShebangScriptPath::Inaccessible => {
-                return_errno_with_message!(
+                return_errno!(
                     Errno::ENOENT,
                     "the script path is inaccessible after closing close-on-exec file descriptors"
                 );
@@ -97,7 +97,7 @@ enum DetectedExecutable {
 /// Opens a path as an executable file.
 fn open_executable_file(path: Path) -> Result<Arc<dyn FileLike>> {
     if path.mount_node().flags().contains(PerMountFlags::NOEXEC) {
-        return_errno_with_message!(
+        return_errno!(
             Errno::EACCES,
             "the executable is on a file system mounted with `noexec`"
         );
@@ -160,7 +160,7 @@ impl ProgramToLoad {
             };
 
             if recursive_limit == 0 {
-                return_errno_with_message!(Errno::ELOOP, "the recursive limit is reached");
+                return_errno!(Errno::ELOOP, "the recursive limit is reached");
             }
             recursive_limit -= 1;
 
@@ -220,19 +220,19 @@ impl ProgramToLoad {
 
 fn check_executable_inode(inode: &dyn Inode) -> Result<()> {
     if inode.type_().is_directory() {
-        return_errno_with_message!(Errno::EISDIR, "the inode is a directory");
+        return_errno!(Errno::EISDIR, "the inode is a directory");
     }
 
     if inode.type_() == InodeType::SymLink {
-        return_errno_with_message!(Errno::ELOOP, "the inode is a symbolic link");
+        return_errno!(Errno::ELOOP, "the inode is a symbolic link");
     }
 
     if !inode.type_().is_regular_file() {
-        return_errno_with_message!(Errno::EACCES, "the inode is not a regular file");
+        return_errno!(Errno::EACCES, "the inode is not a regular file");
     }
 
     if inode.check_permission(Permission::MAY_EXEC).is_err() {
-        return_errno_with_message!(Errno::EACCES, "the inode is not executable");
+        return_errno!(Errno::EACCES, "the inode is not executable");
     }
 
     Ok(())

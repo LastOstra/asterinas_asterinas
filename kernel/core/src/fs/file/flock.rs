@@ -117,7 +117,7 @@ impl FlockList {
             if let Some(waker) = waker {
                 conflict_lock.waitqueue.enqueue(waker.clone());
             }
-            return_errno_with_message!(Errno::EAGAIN, "the file is locked");
+            return_errno!(Errno::EAGAIN, "the file is locked");
         } else {
             match list.iter().position(|l| req_lock.same_owner_with(l)) {
                 Some(idx) => {

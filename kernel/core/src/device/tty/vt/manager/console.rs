@@ -192,10 +192,7 @@ impl VtConsole {
                 Error::with_message(Errno::EINVAL, "the font is invalid for the console")
             }),
             VtConsoleBackend::None => {
-                return_errno_with_message!(
-                    Errno::ENOTTY,
-                    "the console has no support for font setting"
-                );
+                return_errno!(Errno::ENOTTY, "the console has no support for font setting");
             }
         }
     }

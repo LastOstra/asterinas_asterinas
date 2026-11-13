@@ -216,26 +216,26 @@ impl<'x> RenameFacts<'x> {
         if source_is_merged_dir
             || (request == RenameMode::Exchange && target_is_dir && target_is_merged_dir)
         {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EXDEV,
                 "the overlay cross-directory rename of a lower-backed or merged directory \
                  requires the not-yet-implemented redirect_dir policy"
             );
         }
         if request != RenameMode::Exchange && source_is_dir && target_is_visible && !target_is_dir {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::ENOTDIR,
                 "a directory cannot be renamed onto a non-directory name"
             );
         }
         if request != RenameMode::Exchange && !source_is_dir && target_is_visible && target_is_dir {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EISDIR,
                 "a non-directory cannot be renamed onto a directory name"
             );
         }
         if request == RenameMode::NoReplace && target_is_visible {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EEXIST,
                 "the rename target already exists and is visible"
             );
@@ -269,7 +269,7 @@ impl<'x> RenameFacts<'x> {
         };
 
         if whiteout == WhiteoutAction::Create && !policy.can_express_whiteout() {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EOPNOTSUPP,
                 "the upper filesystem supports no whiteout form; the rename cannot publish one"
             );
@@ -278,7 +278,7 @@ impl<'x> RenameFacts<'x> {
             && lower_layer_holds_new_name_as_directory
             && !policy.can_store_private_xattr()
         {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EOPNOTSUPP,
                 "the upper filesystem cannot store the opaque marker required for a rename"
             );
@@ -380,7 +380,7 @@ impl<'x> RenameFacts<'x> {
             return Ok(());
         }
         if !fs.policy().can_store_private_xattr() {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EOPNOTSUPP,
                 "the upper filesystem cannot store the impure marker required for a rename"
             );

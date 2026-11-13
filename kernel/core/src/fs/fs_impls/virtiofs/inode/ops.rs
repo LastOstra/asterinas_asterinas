@@ -278,7 +278,7 @@ impl VirtioFsInode {
                 Some(request_offset) => request_offset,
                 None if total_written > 0 => return Ok(total_written),
                 None => {
-                    return_errno_with_message!(Errno::EOVERFLOW, "virtiofs write offset overflow");
+                    return_errno!(Errno::EOVERFLOW, "virtiofs write offset overflow");
                 }
             };
             let ret = fs
@@ -307,7 +307,7 @@ impl VirtioFsInode {
                     return Ok(total_written);
                 }
 
-                return_errno_with_message!(Errno::EIO, "virtiofs write response is too large");
+                return_errno!(Errno::EIO, "virtiofs write response is too large");
             }
             if written == 0 {
                 break;
@@ -572,7 +572,7 @@ impl VirtioFsInode {
                     err
                 );
             }
-            return_errno_with_message!(Errno::ESTALE, "virtiofs stale dentry after revalidate");
+            return_errno!(Errno::ESTALE, "virtiofs stale dentry after revalidate");
         }
 
         self.commit_entry_reply(

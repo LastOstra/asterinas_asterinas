@@ -55,7 +55,7 @@ impl InitStream {
 
     pub(super) fn bind(&mut self, addr: VsockSocketAddr) -> Result<()> {
         if self.bound_port.is_some() {
-            return_errno_with_message!(Errno::EINVAL, "the socket is already bound to an address");
+            return_errno!(Errno::EINVAL, "the socket is already bound to an address");
         }
 
         if let Ok(port) = u16::try_from(addr.port) {
@@ -133,7 +133,7 @@ impl InitStream {
             return Ok(());
         }
 
-        return_errno_with_message!(Errno::ENOTCONN, "the socket is not connected");
+        return_errno!(Errno::ENOTCONN, "the socket is not connected");
     }
 
     pub(super) fn local_addr(&self) -> Option<VsockSocketAddr> {

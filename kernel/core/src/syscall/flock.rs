@@ -65,18 +65,18 @@ impl FlockOps {
         if let Some(ops) = Self::from_bits(bits) {
             if ops.contains(Self::LOCK_SH) {
                 if ops.contains(Self::LOCK_EX) || ops.contains(Self::LOCK_UN) {
-                    return_errno_with_message!(Errno::EINVAL, "invalid operation");
+                    return_errno!(Errno::EINVAL, "invalid operation");
                 }
             } else if ops.contains(Self::LOCK_EX) {
                 if ops.contains(Self::LOCK_UN) {
-                    return_errno_with_message!(Errno::EINVAL, "invalid operation");
+                    return_errno!(Errno::EINVAL, "invalid operation");
                 }
             } else if !ops.contains(Self::LOCK_UN) {
-                return_errno_with_message!(Errno::EINVAL, "invalid operation");
+                return_errno!(Errno::EINVAL, "invalid operation");
             }
             Ok(ops)
         } else {
-            return_errno_with_message!(Errno::EINVAL, "invalid operation");
+            return_errno!(Errno::EINVAL, "invalid operation");
         }
     }
 }

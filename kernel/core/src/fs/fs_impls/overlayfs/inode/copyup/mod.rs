@@ -78,7 +78,7 @@ impl OverlayFs {
         let mut parent_dentry = dentry.parent();
         let mut publication_parent = loop {
             let Some(parent) = parent_dentry else {
-                return_errno_with_message!(
+                return_errno!(
                     Errno::EIO,
                     "the copy-up operation dentry has no overlay parent"
                 );
@@ -112,7 +112,7 @@ impl OverlayFs {
         name: &str,
     ) -> Result<()> {
         if self.policy().is_effective_read_only() {
-            return_errno_with_message!(Errno::EROFS, "the overlay mount is read-only");
+            return_errno!(Errno::EROFS, "the overlay mount is read-only");
         }
         self.promote_level(publication_parent, promoted_object, name)
     }
@@ -130,13 +130,13 @@ impl OverlayFs {
 
         // Both latches are read under both locks; a set latch fails the round before it stages.
         if promoted_object.is_name_taken() {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::ENOENT,
                 "the copy-up target name was taken away before the promotion round"
             );
         }
         if publication_parent.is_name_taken() {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::ENOENT,
                 "the copy-up publication parent is no longer reachable"
             );
@@ -159,7 +159,7 @@ impl OverlayFs {
             }
             (None, Some(_)) => return Ok(()),
             (Some(_), _) => {
-                return_errno_with_message!(
+                return_errno!(
                     Errno::ESTALE,
                     "the promotion name is already held in the upper"
                 );
@@ -252,7 +252,7 @@ impl OverlayInode {
                 let target = match source.real_inode().read_link()? {
                     SymbolicLink::Plain(target) => target,
                     SymbolicLink::Path(_) => {
-                        return_errno_with_message!(
+                        return_errno!(
                             Errno::EOPNOTSUPP,
                             "a path-style symlink target cannot be copied up"
                         );
@@ -301,10 +301,7 @@ impl OverlayInode {
                         MknodType::BlockDevice(rdev)
                     }
                     _ => {
-                        return_errno_with_message!(
-                            Errno::EOPNOTSUPP,
-                            "socket nodes cannot be copied up"
-                        );
+                        return_errno!(Errno::EOPNOTSUPP, "socket nodes cannot be copied up");
                     }
                 };
                 let mode = source.real_inode().mode()?;
@@ -317,7 +314,7 @@ impl OverlayInode {
                 )?
             }
             InodeType::Unknown => {
-                return_errno_with_message!(
+                return_errno!(
                     Errno::EINVAL,
                     "overlay objects of an unknown type cannot be promoted"
                 );

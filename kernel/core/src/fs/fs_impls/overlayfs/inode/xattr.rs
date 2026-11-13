@@ -239,7 +239,7 @@ impl OverlayInode {
             }
             // An entry that does not fit fails the call; earlier entries stay and none is split.
             if entry_len > list_writer.avail() {
-                return_errno_with_message!(
+                return_errno!(
                     Errno::ERANGE,
                     "the xattr list buffer is too small for the presented list"
                 );
@@ -366,7 +366,7 @@ impl OverlayInode {
             return Ok(String::from(full_name));
         }
         if full_name.len() + ESCAPE_INFIX.len() > XATTR_NAME_MAX_LEN {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EOPNOTSUPP,
                 "the escaped overlay xattr name exceeds the xattr name length limit"
             );
@@ -419,7 +419,7 @@ impl OverlayInode {
         name: &XattrName<'_>,
     ) -> Result<Vec<u8>> {
         let Some(reborrowed) = XattrName::try_from_full_name(name.full_name()) else {
-            return_errno_with_message!(Errno::EINVAL, "the xattr name is not a valid escaped name");
+            return_errno!(Errno::EINVAL, "the xattr name is not a valid escaped name");
         };
         let mut probe = VmWriter::from(&mut [] as &mut [u8]).to_fallible();
         let value_len = source.get_xattr(reborrowed, &mut probe)?;

@@ -258,7 +258,7 @@ impl Inode for VirtioFsInode {
 
     fn resize(&self, _self_dentry: &Dentry, new_size: usize) -> Result<()> {
         if self.type_() != InodeType::File {
-            return_errno_with_message!(Errno::EISDIR, "resize on non-regular file");
+            return_errno!(Errno::EISDIR, "resize on non-regular file");
         }
 
         let size = u64::try_from(new_size)
@@ -402,7 +402,7 @@ impl Inode for VirtioFsInode {
                 ),
             )?,
             _ => {
-                return_errno_with_message!(
+                return_errno!(
                     Errno::EOPNOTSUPP,
                     "virtiofs create supports file/dir/socket only"
                 )
@@ -495,7 +495,7 @@ impl Inode for VirtioFsInode {
         mode: RenameMode,
     ) -> Result<()> {
         if mode == RenameMode::Exchange {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "RENAME_EXCHANGE is not supported on virtiofs"
             );
@@ -577,7 +577,7 @@ impl Inode for VirtioFsInode {
 
     fn read_link(&self) -> Result<SymbolicLink> {
         if self.type_ != InodeType::SymLink {
-            return_errno_with_message!(Errno::EINVAL, "read_link on non-symlink")
+            return_errno!(Errno::EINVAL, "read_link on non-symlink")
         }
 
         let fs = self.fs_ref();
@@ -599,7 +599,7 @@ impl FileOps for VirtioFsInode {
         status_flags: StatusFlags,
     ) -> Result<usize> {
         if self.type_ != InodeType::File {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EBADF,
                 "virtiofs inode I/O requires an open file handle"
             );
@@ -623,7 +623,7 @@ impl FileOps for VirtioFsInode {
         // normal writes go through the per-open `VirtioFsFile`, which owns the
         // server-provided handle from `FUSE_OPEN`. If a future direct-inode
         // writer appears, it must define the handle semantics explicitly.
-        return_errno_with_message!(
+        return_errno!(
             Errno::EOPNOTSUPP,
             "virtiofs inode write_at without an open file handle is not supported"
         )

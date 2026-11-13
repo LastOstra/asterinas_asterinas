@@ -58,7 +58,7 @@ fn handle_get_ifconf(raw_ioctl: RawIoctl) -> Result<i32> {
             cmd.write(&ifconf)?;
             Ok(0)
         }
-        _ => return_errno_with_message!(Errno::ENOTTY, "the socket ioctl command is unknown"),
+        _ => return_errno!(Errno::ENOTTY, "the socket ioctl command is unknown"),
     })
 }
 
@@ -118,7 +118,7 @@ fn network_device_ioctl(raw_ioctl: RawIoctl) -> Result<i32> {
             cmd.write(&ifreq)?;
             Ok(0)
         }
-        _ => return_errno_with_message!(Errno::ENOTTY, "the socket ioctl command is unknown"),
+        _ => return_errno!(Errno::ENOTTY, "the socket ioctl command is unknown"),
     })
 }
 

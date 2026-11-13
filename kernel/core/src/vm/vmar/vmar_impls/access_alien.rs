@@ -160,7 +160,7 @@ impl Vmar {
                     match vm_item {
                         VmQueriedItem::MappedRam { frame, .. } => return Ok((*frame).clone()),
                         VmQueriedItem::MappedIoMem { .. } => {
-                            return_errno_with_message!(
+                            return_errno!(
                                 Errno::EOPNOTSUPP,
                                 "accessing alien MMIO memory is not supported currently"
                             );

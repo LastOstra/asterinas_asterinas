@@ -24,11 +24,11 @@ pub(crate) fn lookup_socket_file(path: &str) -> Result<Path> {
         .check_permission(Permission::MAY_READ | Permission::MAY_WRITE)
         .is_err()
     {
-        return_errno_with_message!(Errno::EACCES, "the socket file cannot be read or written")
+        return_errno!(Errno::EACCES, "the socket file cannot be read or written")
     }
 
     if path.type_() != InodeType::Socket {
-        return_errno_with_message!(
+        return_errno!(
             Errno::ECONNREFUSED,
             "the specified file is not a socket file"
         )

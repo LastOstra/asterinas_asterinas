@@ -18,7 +18,7 @@ pub(crate) fn parse_shebang_line(file_first_page: &[u8]) -> Result<Option<Vec<CS
     }
 
     let Some(first_line_len) = file_first_page.iter().position(|&c| c == b'\n') else {
-        return_errno_with_message!(Errno::ENOEXEC, "the shebang line is too long");
+        return_errno!(Errno::ENOEXEC, "the shebang line is too long");
     };
 
     // Skip `#!`.
@@ -36,7 +36,7 @@ pub(crate) fn parse_shebang_line(file_first_page: &[u8]) -> Result<Option<Vec<CS
     }
 
     if shebang_argv.is_empty() {
-        return_errno_with_message!(Errno::ENOEXEC, "no interpreter program is found");
+        return_errno!(Errno::ENOEXEC, "no interpreter program is found");
     }
 
     Ok(Some(shebang_argv))

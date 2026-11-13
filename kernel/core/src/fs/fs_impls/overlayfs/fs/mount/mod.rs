@@ -75,7 +75,7 @@ impl OverlayFs {
                     UpperFilesystemCapabilities::probe(&inuse_pair, xattr_namespace)?;
                 // Whiteout suppression and the merge trust the reported type; no stat fallback.
                 if !capabilities.can_report_directory_type() {
-                    return_errno_with_message!(
+                    return_errno!(
                         Errno::EOPNOTSUPP,
                         "the upper filesystem cannot report directory entry types"
                     );
@@ -89,7 +89,7 @@ impl OverlayFs {
                         }
                         Err(persist_err) => match uuid_mode {
                             UuidMode::On => {
-                                return_errno_with_message!(
+                                return_errno!(
                                     Errno::EOPNOTSUPP,
                                     "failed to persist the overlay uuid"
                                 );

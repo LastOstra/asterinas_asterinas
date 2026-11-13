@@ -82,7 +82,7 @@ impl TryFrom<SchedPolicy> for LinuxSchedAttr {
                 ..Default::default()
             },
 
-            SchedPolicy::Idle => return_errno_with_message!(
+            SchedPolicy::Idle => return_errno!(
                 Errno::EACCES,
                 "scheduling attributes for idle tasks are not accessible"
             ),
@@ -109,7 +109,7 @@ impl TryFrom<LinuxSchedAttr> for SchedPolicy {
             },
 
             _ if value.sched_priority != 0 => {
-                return_errno_with_message!(Errno::EINVAL, "invalid scheduling priority")
+                return_errno!(Errno::EINVAL, "invalid scheduling priority")
             }
 
             LinuxSchedPolicy::Normal => SchedPolicy::Fair(Nice::new(
@@ -128,7 +128,7 @@ impl TryFrom<LinuxSchedAttr> for SchedPolicy {
             | LinuxSchedPolicy::Iso
             | LinuxSchedPolicy::Deadline
             | LinuxSchedPolicy::Ext => {
-                return_errno_with_message!(Errno::EINVAL, "invalid scheduling policy")
+                return_errno!(Errno::EINVAL, "invalid scheduling policy")
             }
         })
     }
@@ -151,7 +151,7 @@ pub(super) fn read_linux_sched_attr_from_user(
     };
     if user_size < SCHED_ATTR_SIZE_VER0 || user_size > PAGE_SIZE as u32 {
         let _ = user_space.write_val(addr, &(size_of::<LinuxSchedAttr>() as u32));
-        return_errno_with_message!(Errno::E2BIG, "invalid scheduling attribute size");
+        return_errno!(Errno::E2BIG, "invalid scheduling attribute size");
     }
 
     let mut attr = user_space
@@ -176,7 +176,7 @@ pub(super) fn write_linux_sched_attr_to_user(
     ctx: &Context,
 ) -> Result<()> {
     if user_size < SCHED_ATTR_SIZE_VER0 || user_size > PAGE_SIZE as u32 {
-        return_errno_with_message!(Errno::EINVAL, "invalid scheduling attribute size");
+        return_errno!(Errno::EINVAL, "invalid scheduling attribute size");
     }
 
     attr.size = (size_of::<LinuxSchedAttr>() as u32).min(user_size);
@@ -200,7 +200,7 @@ pub(super) fn access_sched_attr_with<T>(
     f: impl FnOnce(&SchedAttr) -> Result<T>,
 ) -> Result<T> {
     if tid.cast_signed() < 0 {
-        return_errno_with_message!(Errno::EINVAL, "all negative TIDs are not valid");
+        return_errno!(Errno::EINVAL, "all negative TIDs are not valid");
     }
 
     if tid == 0 {
@@ -208,7 +208,7 @@ pub(super) fn access_sched_attr_with<T>(
     }
 
     let Some(thread) = pid_table::pid_table_mut().get_thread(tid) else {
-        return_errno_with_message!(Errno::ESRCH, "the target thread does not exist");
+        return_errno!(Errno::ESRCH, "the target thread does not exist");
     };
     f(thread.sched_attr())
 }
@@ -221,11 +221,11 @@ pub(super) fn sys_sched_getattr(
     ctx: &Context,
 ) -> Result<SyscallReturn> {
     if addr == 0 {
-        return_errno_with_message!(Errno::EINVAL, "invalid user space address");
+        return_errno!(Errno::EINVAL, "invalid user space address");
     }
     if flags != 0 {
         // Linux also has no support for any flags yet.
-        return_errno_with_message!(Errno::EINVAL, "invalid flags");
+        return_errno!(Errno::EINVAL, "invalid flags");
     }
 
     let policy = access_sched_attr_with(tid, ctx, |attr| Ok(attr.policy()))?;

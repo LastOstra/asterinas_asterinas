@@ -40,7 +40,7 @@ pub(super) fn sys_clone3(
         clong_args_addr, size
     );
     if size != size_of::<Clone3Args>() {
-        return_errno_with_message!(Errno::EINVAL, "invalid size");
+        return_errno!(Errno::EINVAL, "invalid size");
     }
 
     let clone_args = {
@@ -111,7 +111,7 @@ impl TryFrom<Clone3Args> for CloneArgs {
         if flags.intersects(CloneFlags::CLONE_PARENT | CloneFlags::CLONE_THREAD)
             && exit_signal.is_some()
         {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "`CLONE_PARENT` and  `CLONE_THREAD` cannot be used if the exit signal is specified"
             )
@@ -121,7 +121,7 @@ impl TryFrom<Clone3Args> for CloneArgs {
             NonZeroU64::new(value.stack),
             NonZeroU64::new(value.stack_size),
         ) {
-            (Some(_), None) | (None, Some(_)) => return_errno_with_message!(
+            (Some(_), None) | (None, Some(_)) => return_errno!(
                 Errno::EINVAL,
                 "the stack and the stack size must be specified together"
             ),
@@ -131,10 +131,7 @@ impl TryFrom<Clone3Args> for CloneArgs {
                         .checked_add(stack_size.get() - 1)
                         .is_none_or(|stack_end| !is_userspace_vaddr(stack_end.get() as Vaddr)) =>
             {
-                return_errno_with_message!(
-                    Errno::EINVAL,
-                    "the stack address is not in the userspace"
-                )
+                return_errno!(Errno::EINVAL, "the stack address is not in the userspace")
             }
             vals => vals,
         };

@@ -225,7 +225,7 @@ impl VmarInner {
             .get_cur();
 
         if rlimit_as.saturating_sub(self.total_vm as u64) < expand_size as u64 {
-            return_errno_with_message!(Errno::ENOMEM, "the address space size limit is reached");
+            return_errno!(Errno::ENOMEM, "the address space size limit is reached");
         }
         Ok(())
     }
@@ -240,7 +240,7 @@ impl VmarInner {
         {
             Ok(vm_mapping.map_to_addr())
         } else {
-            return_errno_with_message!(Errno::EFAULT, "the range must lie in a single mapping");
+            return_errno!(Errno::EFAULT, "the range must lie in a single mapping");
         }
     }
 
@@ -361,7 +361,7 @@ impl VmarInner {
             .next()
             .is_some()
         {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EEXIST,
                 "the range contains pages that are already mapped"
             );
@@ -488,7 +488,7 @@ impl VmarInner {
             }
         }
 
-        return_errno_with_message!(Errno::ENOMEM, "no free region for mapping can be found");
+        return_errno!(Errno::ENOMEM, "no free region for mapping can be found");
     }
 
     /// Splits and unmaps the found mapping if the new size is smaller.
@@ -506,7 +506,7 @@ impl VmarInner {
         debug_assert_eq!(new_size % PAGE_SIZE, 0);
 
         if new_size == 0 {
-            return_errno_with_message!(Errno::EINVAL, "resizing a mapping to zero is invalid");
+            return_errno!(Errno::EINVAL, "resizing a mapping to zero is invalid");
         }
 
         if new_size == old_size {
@@ -514,13 +514,13 @@ impl VmarInner {
         }
 
         if !is_userspace_vaddr_range(map_addr, new_size) {
-            return_errno_with_message!(Errno::EINVAL, "the address range is not in userspace");
+            return_errno!(Errno::EINVAL, "the address range is not in userspace");
         }
 
         if new_size < old_size {
             // Shrink the mapping. The old mapping is larger.
             if map_addr.checked_add(old_size).is_none() {
-                return_errno_with_message!(Errno::EINVAL, "the address range overflows");
+                return_errno!(Errno::EINVAL, "the address range overflows");
             }
             self.alloc_free_region_exact_truncate(
                 vmar,
@@ -546,7 +546,7 @@ impl VmarInner {
         debug_assert_eq!(last_mapping.map_end(), old_map_end);
 
         if !last_mapping.can_expand() {
-            return_errno_with_message!(Errno::EFAULT, "device mappings cannot be expanded");
+            return_errno!(Errno::EFAULT, "device mappings cannot be expanded");
         }
 
         self.check_extra_size_fits_rlimit(new_size - old_size)?;

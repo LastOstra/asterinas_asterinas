@@ -75,7 +75,7 @@ fn handle_getfd(fd: FileDesc, ctx: &Context) -> Result<SyscallReturn> {
 
 fn handle_setfd(fd: FileDesc, arg: u64, ctx: &Context) -> Result<SyscallReturn> {
     let flags = if arg > u64::from(u8::MAX) {
-        return_errno_with_message!(Errno::EINVAL, "invalid fd flags");
+        return_errno!(Errno::EINVAL, "invalid fd flags");
     } else {
         FdFlags::from_bits(arg as u8)
             .ok_or_else(|| Error::with_message(Errno::EINVAL, "invalid fd flags"))?
@@ -118,7 +118,7 @@ fn handle_getlk(fd: FileDesc, arg: u64, ctx: &Context) -> Result<SyscallReturn> 
     let mut lock_mut_c = ctx.user_space().read_val::<c_flock>(lock_mut_ptr)?;
     let lock_type = RangeLockType::try_from(lock_mut_c.l_type)?;
     if lock_type == RangeLockType::Unlock {
-        return_errno_with_message!(Errno::EINVAL, "invalid flock type for getlk");
+        return_errno!(Errno::EINVAL, "invalid flock type for getlk");
     }
     let lock = RangeLockItem::new(
         owner,
@@ -171,7 +171,7 @@ fn handle_setlk(
     });
     if !file_is_still_open {
         inode_file.release_range_locks(owner);
-        return_errno_with_message!(
+        return_errno!(
             Errno::EBADF,
             "the file descriptor was closed while setting a range lock"
         );
@@ -193,7 +193,7 @@ fn handle_setown(fd: FileDesc, arg: u64, ctx: &Context) -> Result<SyscallReturn>
     // TODO: Support process groups instead of falling back to processes.
     let pid = (arg as i32).unsigned_abs();
     if pid.cast_signed() < 0 {
-        return_errno_with_message!(Errno::EINVAL, "negative PIDs are not valid");
+        return_errno!(Errno::EINVAL, "negative PIDs are not valid");
     }
 
     let owner_process = if pid == 0 {
@@ -315,7 +315,7 @@ fn from_c_flock_and_file(lock: &c_flock, file: &dyn FileLike) -> Result<FileRang
     };
 
     if start < 0 {
-        return_errno_with_message!(Errno::EINVAL, "invalid start");
+        return_errno!(Errno::EINVAL, "invalid start");
     }
 
     let (start, end) = match lock.l_len {
@@ -331,7 +331,7 @@ fn from_c_flock_and_file(lock: &c_flock, file: &dyn FileLike) -> Result<FileRang
             // `start + len` won't overflow because `start >= 0` and `len < 0`.
             let new_start = start + len;
             if new_start < 0 {
-                return_errno_with_message!(Errno::EINVAL, "invalid len");
+                return_errno!(Errno::EINVAL, "invalid len");
             }
             (new_start as usize, end as usize)
         }

@@ -133,7 +133,7 @@ impl RealObject {
                     .inode()
                     .write_at(offset, &mut reader, StatusFlags::empty())?;
             if write_len != read_len {
-                return_errno_with_message!(
+                return_errno!(
                     Errno::EIO,
                     "the workdir temp accepted a short write during copy-up"
                 );
@@ -142,7 +142,7 @@ impl RealObject {
         }
         // The invariant: every byte the lower declared must have been copied.
         if offset != size {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EIO,
                 "the copy-up copied fewer bytes than the lower file declares"
             );

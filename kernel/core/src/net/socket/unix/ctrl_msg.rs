@@ -87,14 +87,14 @@ impl FileMessage {
     fn read_from(header: &CControlHeader, reader: &mut VmReader) -> Result<Self> {
         let payload_len = header.payload_len();
         if !payload_len.is_multiple_of(size_of::<i32>()) {
-            return_errno_with_message!(Errno::EINVAL, "the SCM_RIGHTS message is invalid");
+            return_errno!(Errno::EINVAL, "the SCM_RIGHTS message is invalid");
         }
         let nfiles = payload_len / size_of::<i32>();
 
         // "Attempting to send an array larger than this limit causes sendmsg(2) to fail with the
         // error EINVAL." -- Reference: <https://man7.org/linux/man-pages/man7/unix.7.html>.
         if nfiles > MAX_NR_FILES {
-            return_errno_with_message!(Errno::EINVAL, "the SCM_RIGHTS message is too large");
+            return_errno!(Errno::EINVAL, "the SCM_RIGHTS message is too large");
         }
         // TODO: "[the ETOOMANYREFS error] occurs if the number of "in-flight" file descriptors
         // exceeds the RLIMIT_NOFILE resource limit and the caller does not have the
@@ -119,7 +119,7 @@ impl FileMessage {
             .len()
             .min(CControlHeader::payload_len_from_total(writer.avail())? / size_of::<i32>());
         if nfiles == 0 {
-            return_errno_with_message!(Errno::EINVAL, "the control message buffer is too small");
+            return_errno!(Errno::EINVAL, "the control message buffer is too small");
         }
         let output_flags = if nfiles < self.files.len() {
             RecvFlags::MSG_CTRUNC
@@ -160,7 +160,7 @@ struct CredMessage {
 impl CredMessage {
     fn read_from(header: &CControlHeader, reader: &mut VmReader) -> Result<Self> {
         if header.payload_len() != size_of::<CUserCred>() {
-            return_errno_with_message!(Errno::EINVAL, "the SCM_CREDENTIALS message is invalid");
+            return_errno!(Errno::EINVAL, "the SCM_CREDENTIALS message is invalid");
         }
 
         let cred = reader.read_val()?;
@@ -232,10 +232,7 @@ impl AuxiliaryData {
                     files: mut msg_files,
                 }) => {
                     if msg_files.len() > MAX_NR_FILES - files.len() {
-                        return_errno_with_message!(
-                            Errno::EINVAL,
-                            "the SCM_RIGHTS message is too large"
-                        );
+                        return_errno!(Errno::EINVAL, "the SCM_RIGHTS message is too large");
                     }
                     files.append(&mut msg_files);
                 }
@@ -243,10 +240,7 @@ impl AuxiliaryData {
                     let cur_cred = SocketCred::<ReadOp>::new_current();
                     if cur_cred.to_real_c_cred() != msg_cred {
                         // FIXME: Allow this if we're root or have the CAP_SYS_ADMIN capability.
-                        return_errno_with_message!(
-                            Errno::EPERM,
-                            "setting others' credentials is not allowed"
-                        );
+                        return_errno!(Errno::EPERM, "setting others' credentials is not allowed");
                     }
                     cred = Some(cur_cred);
                 }

@@ -292,7 +292,7 @@ impl TryFrom<&RawInode> for InodeDesc {
     type Error = Error;
     fn try_from(raw: &RawInode) -> Result<Self> {
         if raw.link_count == 0 {
-            return_errno_with_message!(Errno::ESTALE, "inode has been deleted");
+            return_errno!(Errno::ESTALE, "inode has been deleted");
         }
 
         let mode = raw.mode;
@@ -311,10 +311,10 @@ impl TryFrom<&RawInode> for InodeDesc {
 
         // Linux stores the nul byte in symlink, so the maximum size is `BLOCK_SIZE - 1`.
         if type_ == InodeType::SymLink && size >= BLOCK_SIZE as u64 {
-            return_errno_with_message!(Errno::EUCLEAN, "corrupted symlink on disk");
+            return_errno!(Errno::EUCLEAN, "corrupted symlink on disk");
         }
         if size > i64::MAX as u64 {
-            return_errno_with_message!(Errno::EUCLEAN, "corrupted inode on disk");
+            return_errno!(Errno::EUCLEAN, "corrupted inode on disk");
         }
 
         let flags = FileFlags::from_bits(raw.flags)
@@ -473,7 +473,7 @@ impl InodeInner {
             block_manager,
         } = &mut self.payload
         else {
-            return_errno_with_message!(Errno::EINVAL, "inode has no data page cache");
+            return_errno!(Errno::EINVAL, "inode has no data page cache");
         };
         page_cache.resize(new_size_bytes, old_size_bytes)?;
         // Reset the npages to let the `PageCacheBackend` know the size of page cache.

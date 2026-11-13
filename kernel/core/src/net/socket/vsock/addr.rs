@@ -15,7 +15,7 @@ impl TryFrom<SocketAddr> for VsockSocketAddr {
 
     fn try_from(value: SocketAddr) -> Result<Self> {
         let SocketAddr::Vsock(addr) = value else {
-            return_errno_with_message!(Errno::EINVAL, "the socket address is not vsock");
+            return_errno!(Errno::EINVAL, "the socket address is not vsock");
         };
 
         Ok(addr)

@@ -158,7 +158,7 @@ impl Socket for DatagramSocket {
         let endpoint = map_unspecified_to_localhost(socket_addr.try_into()?);
         let can_broadcast = self.options.read().socket.broadcast();
         if !can_broadcast && is_broadcast_endpoint(&endpoint) {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EACCES,
                 "connecting to a broadcast address without SO_BROADCAST is not allowed"
             );
@@ -210,7 +210,7 @@ impl Socket for DatagramSocket {
         if let Some(endpoint) = endpoint.as_ref() {
             let can_broadcast = self.options.read().socket.broadcast();
             if !can_broadcast && is_broadcast_endpoint(endpoint) {
-                return_errno_with_message!(
+                return_errno!(
                     Errno::EACCES,
                     "sending to a broadcast address without SO_BROADCAST is not allowed"
                 );
@@ -343,7 +343,7 @@ impl SetSocketLevelOption for (&Inner<UnboundDatagram, BoundDatagram>, &SocketTi
 
 impl SetIpLevelOption for Inner<UnboundDatagram, BoundDatagram> {
     fn set_hdrincl(&self, _hdrincl: bool) -> Result<()> {
-        return_errno_with_message!(
+        return_errno!(
             Errno::ENOPROTOOPT,
             "IP_HDRINCL cannot be set on UDP sockets"
         );

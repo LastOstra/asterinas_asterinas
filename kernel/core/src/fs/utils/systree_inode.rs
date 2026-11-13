@@ -203,20 +203,17 @@ pub(in crate::fs) trait SysTreeInodeTy: Send + Sync + 'static {
         } else {
             // If no child node found, try finding an attribute of the current branch node
             if sysnode.is_attr_absent(name) {
-                return_errno_with_message!(Errno::ENOENT, "attribute is not present");
+                return_errno!(Errno::ENOENT, "attribute is not present");
             }
             let Some(attr) = sysnode.node_attrs().get(name).cloned() else {
-                return_errno_with_message!(Errno::ENOENT, "child node or attribute not found");
+                return_errno!(Errno::ENOENT, "child node or attribute not found");
             };
 
             let parent_node_arc: Arc<dyn SysNode> = match &self.node_kind() {
                 SysTreeNodeKind::Branch(branch_arc) => branch_arc.clone(),
                 // This case shouldn't happen if lookup_node_or_attr is called correctly
                 _ => {
-                    return_errno_with_message!(
-                        Errno::EIO,
-                        "lookup_node_or_attr called on non-branch inode"
-                    );
+                    return_errno!(Errno::EIO, "lookup_node_or_attr called on non-branch inode");
                 }
             };
 
@@ -231,17 +228,17 @@ pub(in crate::fs) trait SysTreeInodeTy: Send + Sync + 'static {
     {
         // This function is called when the current inode is a Leaf directory
         if sysnode.is_attr_absent(name) {
-            return_errno_with_message!(Errno::ENOENT, "attribute is not present");
+            return_errno!(Errno::ENOENT, "attribute is not present");
         }
         let Some(attr) = sysnode.node_attrs().get(name).cloned() else {
-            return_errno_with_message!(Errno::ENOENT, "child node or attribute not found");
+            return_errno!(Errno::ENOENT, "child node or attribute not found");
         };
 
         let leaf_node_arc: Arc<dyn SysNode> = match &self.node_kind() {
             SysTreeNodeKind::Leaf(leaf_arc) => leaf_arc.clone(),
             // This case shouldn't happen if lookup_attr is called correctly
             _ => {
-                return_errno_with_message!(Errno::EIO, "lookup_attr called on non-leaf inode");
+                return_errno!(Errno::EIO, "lookup_attr called on non-leaf inode");
             }
         };
 
@@ -383,7 +380,7 @@ impl<KInode: SysTreeInodeTy + Send + Sync + 'static> FileOps for KInode {
 
             if res.is_err() {
                 if count == 0 {
-                    return_errno_with_message!(Errno::EINVAL, "dirent visitor error");
+                    return_errno!(Errno::EINVAL, "dirent visitor error");
                 } else {
                     break;
                 }
@@ -488,7 +485,7 @@ impl<KInode: SysTreeInodeTy + Send + Sync + 'static> Inode for KInode {
         }
 
         let SysTreeNodeKind::Branch(branch_node) = &self.node_kind() else {
-            return_errno_with_message!(Errno::ENOTDIR, "self is not a dir");
+            return_errno!(Errno::ENOTDIR, "self is not a dir");
         };
 
         let new_child = branch_node.create_child(name)?;
@@ -553,7 +550,7 @@ impl<KInode: SysTreeInodeTy + Send + Sync + 'static> Inode for KInode {
 
     default fn lookup(&self, name: &str) -> Result<Arc<dyn Inode>> {
         if self.type_() != InodeType::Dir {
-            return_errno_with_message!(Errno::ENOTDIR, "not a directory inode");
+            return_errno!(Errno::ENOTDIR, "not a directory inode");
         }
 
         if name == "." {

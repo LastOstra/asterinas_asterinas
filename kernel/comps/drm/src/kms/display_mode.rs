@@ -32,7 +32,7 @@ impl DrmDisplayMode {
     /// Creates a simple fixed-refresh display mode.
     pub fn from_size(size: DrmSize, vrefresh_hz: u32) -> Result<Self> {
         if size.is_empty() {
-            return_errno_with_message!(Errno::EINVAL, "the display mode size must not be empty");
+            return_errno!(Errno::EINVAL, "the display mode size must not be empty");
         }
 
         let mut name = [0u8; DRM_DISPLAY_MODE_NAME_LEN];
@@ -116,7 +116,7 @@ struct DrmModeTiming {
 impl DrmModeTiming {
     fn new(active: u32, sync_start: u32, sync_end: u32, total: u32) -> Result<Self> {
         if active == 0 || active > sync_start || sync_start > sync_end || sync_end > total {
-            return_errno_with_message!(Errno::EINVAL, "the display mode timing is invalid");
+            return_errno!(Errno::EINVAL, "the display mode timing is invalid");
         }
 
         Ok(Self {

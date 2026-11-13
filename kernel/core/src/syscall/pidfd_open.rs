@@ -19,7 +19,7 @@ pub(super) fn sys_pidfd_open(pid: Pid, flags: u32, ctx: &Context) -> Result<Sysc
     };
 
     if pid.cast_signed() <= 0 {
-        return_errno_with_message!(Errno::EINVAL, "non-positive PIDs are not valid");
+        return_errno!(Errno::EINVAL, "non-positive PIDs are not valid");
     }
 
     let process = pid_table::pid_table_mut()

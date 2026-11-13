@@ -28,7 +28,7 @@ impl FromStr for SyntheticUevent {
 
         let action = {
             let Some(action_str) = split.next() else {
-                return_errno_with_message!(Errno::EINVAL, "the string is empty");
+                return_errno!(Errno::EINVAL, "the string is empty");
             };
             SysObjAction::from_str(action_str)?
         };
@@ -45,17 +45,14 @@ impl FromStr for SyntheticUevent {
                 // Each string should be in the `KEY=VALUE` format.
                 match env_str.split_once('=') {
                     Some(key_value) => key_value,
-                    None => return_errno_with_message!(Errno::EINVAL, "invalid key value pairs"),
+                    None => return_errno!(Errno::EINVAL, "invalid key value pairs"),
                 }
             };
 
             // Both `KEY` and `VALUE` can contain alphanumeric characters only.
             for byte in key.as_bytes().iter().chain(value.as_bytes()) {
                 if !byte.is_ascii_alphanumeric() {
-                    return_errno_with_message!(
-                        Errno::EINVAL,
-                        "invalid character in key value pairs"
-                    );
+                    return_errno!(Errno::EINVAL, "invalid character in key value pairs");
                 }
             }
 
@@ -84,7 +81,7 @@ impl FromStr for Uuid {
         let bytes = s.as_bytes();
 
         if bytes.len() != UUID_PATTERN.len() {
-            return_errno_with_message!(Errno::EINVAL, "the UUID length is invalid");
+            return_errno!(Errno::EINVAL, "the UUID length is invalid");
         }
 
         for (byte, pattern) in bytes.iter().zip(UUID_PATTERN.as_bytes()) {
@@ -92,7 +89,7 @@ impl FromStr for Uuid {
             {
                 continue;
             } else {
-                return_errno_with_message!(Errno::EINVAL, "the UUID content is invalid");
+                return_errno!(Errno::EINVAL, "the UUID content is invalid");
             }
         }
 

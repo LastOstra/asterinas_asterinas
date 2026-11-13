@@ -40,13 +40,13 @@ pub(super) fn sys_fallocate(
 
 fn check_offset_and_len(offset: i64, len: i64, ctx: &Context) -> Result<()> {
     if offset < 0 || len <= 0 {
-        return_errno_with_message!(
+        return_errno!(
             Errno::EINVAL,
             "offset is less than 0, or len is less than or equal to 0"
         );
     }
     if offset.checked_add(len).is_none() {
-        return_errno_with_message!(Errno::EINVAL, "offset+len has overflowed");
+        return_errno!(Errno::EINVAL, "offset+len has overflowed");
     }
 
     let max_file_size = {
@@ -56,7 +56,7 @@ fn check_offset_and_len(offset: i64, len: i64, ctx: &Context) -> Result<()> {
             .get_cur() as usize
     };
     if (offset + len) as usize > max_file_size {
-        return_errno_with_message!(Errno::EFBIG, "offset+len exceeds the maximum file size");
+        return_errno!(Errno::EFBIG, "offset+len exceeds the maximum file size");
     }
     Ok(())
 }
@@ -99,7 +99,7 @@ impl TryFrom<RawFallocMode> for FallocMode {
         if raw_mode.contains(RawFallocMode::FALLOC_FL_PUNCH_HOLE)
             && raw_mode.contains(RawFallocMode::FALLOC_FL_ZERO_RANGE)
         {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EOPNOTSUPP,
                 "PUNCH_HOLE and ZERO_RANGE cannot be used together"
             );
@@ -107,7 +107,7 @@ impl TryFrom<RawFallocMode> for FallocMode {
         if raw_mode.contains(RawFallocMode::FALLOC_FL_PUNCH_HOLE)
             && !raw_mode.contains(RawFallocMode::FALLOC_FL_KEEP_SIZE)
         {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EOPNOTSUPP,
                 "PUNCH_HOLE must be combined with KEEP_SIZE"
             );
@@ -115,7 +115,7 @@ impl TryFrom<RawFallocMode> for FallocMode {
         if raw_mode.contains(RawFallocMode::FALLOC_FL_COLLAPSE_RANGE)
             && !(raw_mode - RawFallocMode::FALLOC_FL_COLLAPSE_RANGE).is_empty()
         {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "COLLAPSE_RANGE must be used exclusively without any other flags"
             );
@@ -123,7 +123,7 @@ impl TryFrom<RawFallocMode> for FallocMode {
         if raw_mode.contains(RawFallocMode::FALLOC_FL_INSERT_RANGE)
             && !(raw_mode - RawFallocMode::FALLOC_FL_INSERT_RANGE).is_empty()
         {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "INSERT_RANGE must be used exclusively without any other flags"
             );
@@ -133,7 +133,7 @@ impl TryFrom<RawFallocMode> for FallocMode {
                 - (RawFallocMode::FALLOC_FL_UNSHARE_RANGE | RawFallocMode::FALLOC_FL_KEEP_SIZE))
                 .is_empty()
         {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "UNSHARE_RANGE can only be combined with KEEP_SIZE."
             );

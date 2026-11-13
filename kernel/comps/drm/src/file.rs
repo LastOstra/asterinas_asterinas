@@ -181,7 +181,7 @@ impl DrmFile {
     pub(super) fn remove_gem_object(&self, handle: u32) -> Result<()> {
         let mut gem_handles = self.gem_handles.lock();
         let Some(gem_object) = gem_handles.remove(handle) else {
-            return_errno_with_message!(Errno::EINVAL, "the GEM handle is invalid");
+            return_errno!(Errno::EINVAL, "the GEM handle is invalid");
         };
         drop(gem_handles);
 
@@ -255,7 +255,7 @@ impl DrmFile {
         if auth_state.was_master && is_owner_process {
             Ok(())
         } else {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EACCES,
                 "the DRM master control requires CAP_SYS_ADMIN or ownership"
             )
@@ -283,7 +283,7 @@ impl PerOpenFileOps for DrmFile {
 
     fn mappable(&self, request: FileMmapRequest) -> Result<MappableObject<'_>> {
         if !request.is_shared() {
-            return_errno_with_message!(Errno::EINVAL, "private DRM mappings are not supported");
+            return_errno!(Errno::EINVAL, "private DRM mappings are not supported");
         }
 
         Ok(MappableObject::Device(self as &dyn Mappable))
@@ -319,7 +319,7 @@ impl FileOps for DrmFile {
         _writer: &mut VmWriter,
         _status_flags: StatusFlags,
     ) -> Result<usize> {
-        return_errno_with_message!(Errno::EINVAL, "reading from a DRM file is not supported")
+        return_errno!(Errno::EINVAL, "reading from a DRM file is not supported")
     }
 
     fn write_at(
@@ -328,7 +328,7 @@ impl FileOps for DrmFile {
         _reader: &mut VmReader,
         _status_flags: StatusFlags,
     ) -> Result<usize> {
-        return_errno_with_message!(Errno::EINVAL, "writing to a DRM file is not supported")
+        return_errno!(Errno::EINVAL, "writing to a DRM file is not supported")
     }
 }
 
@@ -419,7 +419,7 @@ impl DrmGemHandleTable {
 
     fn insert(&mut self, object: Arc<DrmGemObject>) -> Result<u32> {
         let Some(handle) = self.allocator.alloc() else {
-            return_errno_with_message!(Errno::ENOMEM, "no GEM handles are available");
+            return_errno!(Errno::ENOMEM, "no GEM handles are available");
         };
 
         let previous = self.objects.insert(handle, object);

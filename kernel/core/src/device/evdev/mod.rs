@@ -208,7 +208,7 @@ impl Device for EvdevDevice {
         // Get the device from the registry.
         let devices = EVDEV_DEVICES.lock();
         let Some(evdev) = devices.get(&self.id.minor()) else {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::ENODEV,
                 "the evdev device does not exist in the registry"
             );

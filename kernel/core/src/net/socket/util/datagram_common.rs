@@ -35,7 +35,7 @@ pub(crate) trait Bound {
 
     fn local_endpoint(&self) -> Self::Endpoint;
     fn bind(&mut self, _endpoint: &Self::Endpoint) -> Result<()> {
-        return_errno_with_message!(Errno::EINVAL, "the socket is already bound to an address")
+        return_errno!(Errno::EINVAL, "the socket is already bound to an address")
     }
     fn remote_endpoint(&self) -> Option<&Self::Endpoint>;
     fn set_remote_endpoint(&mut self, endpoint: &Self::Endpoint);
@@ -142,7 +142,7 @@ where
     ) -> Result<(RecvOutput, UnboundSocket::Endpoint)> {
         match self {
             Inner::Unbound(_) => {
-                return_errno_with_message!(Errno::EAGAIN, "the socket is not bound");
+                return_errno!(Errno::EAGAIN, "the socket is not bound");
             }
             Inner::Bound(bound_datagram) => bound_datagram.try_recv(writer, flags),
         }

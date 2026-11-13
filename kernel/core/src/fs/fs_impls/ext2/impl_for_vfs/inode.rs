@@ -243,7 +243,7 @@ impl Inode for Ext2Inode {
         mode: RenameMode,
     ) -> Result<()> {
         if mode == RenameMode::Exchange {
-            return_errno_with_message!(Errno::EINVAL, "RENAME_EXCHANGE is not supported on ext2");
+            return_errno!(Errno::EINVAL, "RENAME_EXCHANGE is not supported on ext2");
         }
 
         let new_dir_inode = new_dir_dentry.inode().downcast_ref::<Ext2Inode>().unwrap();
@@ -275,7 +275,7 @@ impl Inode for Ext2Inode {
         let block_group = fs.block_group(self.block_group_idx());
         block_group.sync_inode_table()?;
         if fs.block_device().sync()? != BioStatus::Complete {
-            return_errno_with_message!(Errno::EIO, "failed to flush block device");
+            return_errno!(Errno::EIO, "failed to flush block device");
         }
         Ok(())
     }

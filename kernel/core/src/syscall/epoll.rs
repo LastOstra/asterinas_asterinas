@@ -24,7 +24,7 @@ const EP_MAX_EVENTS: usize = i32::MAX as usize / size_of::<c_epoll_event>();
 
 pub(super) fn sys_epoll_create(size: i32, ctx: &Context) -> Result<SyscallReturn> {
     if size <= 0 {
-        return_errno_with_message!(Errno::EINVAL, "size is not positive");
+        return_errno!(Errno::EINVAL, "size is not positive");
     }
     sys_epoll_create1(0, ctx)
 }
@@ -41,7 +41,7 @@ pub(super) fn sys_epoll_create1(flags: u32, ctx: &Context) -> Result<SyscallRetu
             FdFlags::CLOEXEC
         } else {
             // Only O_CLOEXEC is valid
-            return_errno_with_message!(Errno::EINVAL, "invalid flags");
+            return_errno!(Errno::EINVAL, "invalid flags");
         }
     };
 
@@ -82,7 +82,7 @@ pub(super) fn sys_epoll_ctl(
             let flags = EpollFlags::from_bits_truncate(c_epoll_event.events);
             EpollCtl::Mod(fd, event, flags)
         }
-        _ => return_errno_with_message!(Errno::EINVAL, "invalid op"),
+        _ => return_errno!(Errno::EINVAL, "invalid op"),
     };
 
     let mut file_table = ctx.thread_local.borrow_file_table_mut();
@@ -109,7 +109,7 @@ fn do_epoll_pwait2(
 ) -> Result<usize> {
     let max_events = {
         if max_events <= 0 || max_events as usize > EP_MAX_EVENTS {
-            return_errno_with_message!(Errno::EINVAL, "max_events is not valid");
+            return_errno!(Errno::EINVAL, "max_events is not valid");
         }
         max_events as usize
     };

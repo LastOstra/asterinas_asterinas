@@ -32,7 +32,7 @@ pub(super) fn do_get_addr(
         flags.contains(GetRequestFlags::DUMP)
     };
     if !dump_all {
-        return_errno_with_message!(Errno::EOPNOTSUPP, "GETADDR only supports dump requests");
+        return_errno!(Errno::EOPNOTSUPP, "GETADDR only supports dump requests");
     }
 
     validate_getaddr_request(request_segment, strict_check)?;
@@ -49,7 +49,7 @@ pub(super) fn do_get_addr(
         .filter(|iface| requested_index.is_none_or(|index| index.get() == iface.index()))
         .peekable();
     if requested_index.is_some() && ifaces.peek().is_none() {
-        return_errno_with_message!(Errno::ENODEV, "the interface does not exist");
+        return_errno!(Errno::ENODEV, "the interface does not exist");
     }
 
     let mut addr_segments: Vec<AddrSegment> = ifaces
@@ -88,7 +88,7 @@ fn validate_getaddr_request(request_segment: &AddrSegment, strict_check: bool) -
     // These fields are reserved in GETADDR dumps.
     // Reference: <https://elixir.bootlin.com/linux/v7.1/source/net/ipv4/devinet.c#L1800>.
     if body.prefix_len != 0 || body.flags != 0 || body.scope != 0 {
-        return_errno_with_message!(
+        return_errno!(
             Errno::EINVAL,
             "the address request header contains nonzero prefix length, flags, or scope"
         );
@@ -102,7 +102,7 @@ fn validate_getaddr_request(request_segment: &AddrSegment, strict_check: bool) -
         .iter()
         .any(|attr| attr.class() != ALLOWED)
     {
-        return_errno_with_message!(
+        return_errno!(
             Errno::EINVAL,
             "the attribute is not allowed in an address dump request"
         );

@@ -38,7 +38,7 @@ impl ProcFileOpsByHandle for MemFileOps {
         _status_flags: StatusFlags,
     ) -> Result<Box<dyn PerOpenFileOps>> {
         let Some(process) = self.0.process() else {
-            return_errno_with_message!(Errno::ESRCH, "the process does not exist");
+            return_errno!(Errno::ESRCH, "the process does not exist");
         };
         // Hold the process VMAR lock while checking access permissions and
         // taking the VMAR identity snapshot to prevent race conditions.

@@ -28,13 +28,13 @@ impl OpenArgs {
             && !status_flags.contains(StatusFlags::O_PATH)
         {
             if !creation_flags.contains(CreationFlags::O_DIRECTORY) {
-                return_errno_with_message!(Errno::EINVAL, "O_TMPFILE requires O_DIRECTORY");
+                return_errno!(Errno::EINVAL, "O_TMPFILE requires O_DIRECTORY");
             }
             if !access_mode.is_writable() {
-                return_errno_with_message!(Errno::EINVAL, "O_TMPFILE requires O_RDWR or O_WRONLY");
+                return_errno!(Errno::EINVAL, "O_TMPFILE requires O_RDWR or O_WRONLY");
             }
             if creation_flags.contains(CreationFlags::O_CREAT) {
-                return_errno_with_message!(
+                return_errno!(
                     Errno::EINVAL,
                     "O_TMPFILE and O_CREAT are mutually exclusive"
                 );
@@ -42,7 +42,7 @@ impl OpenArgs {
         } else if creation_flags.contains(CreationFlags::O_CREAT)
             && creation_flags.contains(CreationFlags::O_DIRECTORY)
         {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "O_CREAT and O_DIRECTORY cannot be specified together"
             );

@@ -124,7 +124,7 @@ fn lookup_and_parse_ldso(
         let mut buf = Box::new([0u8; PAGE_SIZE]);
         let len = ldso_file.read_bytes_at(0, &mut *buf)?;
         if len < ElfHeaders::LEN {
-            return_errno_with_message!(Errno::EIO, "the interpreter format is invalid");
+            return_errno!(Errno::EIO, "the interpreter format is invalid");
         }
 
         ElfHeaders::parse(&buf[..len])
@@ -284,10 +284,10 @@ fn map_segment_vmos(
             let offset = (PIE_BASE_ADDR + nr_pages_padding * PAGE_SIZE).align_down(align);
 
             if offset < VMAR_LOWEST_ADDR {
-                return_errno_with_message!(Errno::EPERM, "the mapping address is too small");
+                return_errno!(Errno::EPERM, "the mapping address is too small");
             }
             if VMAR_CAP_ADDR - offset < map_size {
-                return_errno_with_message!(Errno::ENOMEM, "the mapping address is too large");
+                return_errno!(Errno::ENOMEM, "the mapping address is too large");
             }
             vmar.new_map(map_size, VmPerms::empty())
                 .align(align)
@@ -320,7 +320,7 @@ fn map_segment_vmos(
         // Not relocatable object. Map as-is.
 
         if elf_va_range.start < VMAR_LOWEST_ADDR {
-            return_errno_with_message!(Errno::EPERM, "the mapping address is too small");
+            return_errno!(Errno::EPERM, "the mapping address is too small");
         }
 
         // Allocate a continuous range of virtual memory for all segments in advance.
@@ -463,7 +463,7 @@ fn init_aux_vec(
     aux_vec.set(AuxKey::AT_PAGESZ, PAGE_SIZE as _);
 
     let Some(ph_vaddr) = elf_map_range.relocated_addr_of(elf.find_vaddr_of_phdrs()?) else {
-        return_errno_with_message!(
+        return_errno!(
             Errno::ENOEXEC,
             "the ELF program headers are not located in any segments"
         );
@@ -473,7 +473,7 @@ fn init_aux_vec(
     aux_vec.set(AuxKey::AT_PHENT, elf.ph_ent() as u64);
 
     let Some(entry_vaddr) = elf_map_range.relocated_addr_of(elf.entry_point()) else {
-        return_errno_with_message!(
+        return_errno!(
             Errno::ENOEXEC,
             "the entry point is not located in any segments"
         );

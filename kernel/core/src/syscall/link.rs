@@ -49,7 +49,7 @@ pub(super) fn sys_linkat(
             path_resolver.lookup_no_follow(&old_fs_path)?
         };
         if old_path.type_() == InodeType::Dir {
-            return_errno_with_message!(Errno::EPERM, "the link path is a directory");
+            return_errno!(Errno::EPERM, "the link path is a directory");
         }
 
         let (new_path, new_name) = path_resolver

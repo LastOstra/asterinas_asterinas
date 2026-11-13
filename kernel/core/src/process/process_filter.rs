@@ -41,7 +41,7 @@ impl ProcessFilter {
                 })?;
                 Ok(ProcessFilter::WithPidfd(pid_file))
             }
-            _ => return_errno_with_message!(Errno::EINVAL, "the process filter is invalid"),
+            _ => return_errno!(Errno::EINVAL, "the process filter is invalid"),
         }
     }
 
@@ -52,7 +52,7 @@ impl ProcessFilter {
         // <https://man7.org/linux/man-pages/man2/kill.2.html>
         if wait_pid == i32::MIN {
             // Note that performing `-wait_pid` will overflow, so we return an error directly.
-            return_errno_with_message!(Errno::ESRCH, "the target group does not exist");
+            return_errno!(Errno::ESRCH, "the target group does not exist");
         } else if wait_pid < -1 {
             // "wait for any child process whose process group ID is equal to the absolute value of
             // `pid`"

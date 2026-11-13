@@ -99,7 +99,7 @@ pub(crate) fn tgkill(
         // Check the TGID
         let pid = target_posix_thread.process().pid();
         if pid != tgid {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::ESRCH,
                 "the combination of the TGID and the TID is not valid"
             );
@@ -199,7 +199,7 @@ fn check_signal_perm(target: &PosixThread, ctx: &Context, signum: Option<SigNum>
         }
     }
 
-    return_errno_with_message!(
+    return_errno!(
         Errno::EPERM,
         "sending signal to the target process or thread is not allowed"
     )

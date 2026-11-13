@@ -45,7 +45,7 @@ impl DrmFramebuffer {
         gem_object: Arc<DrmGemObject>,
     ) -> Result<Self> {
         if size.is_empty() {
-            return_errno_with_message!(Errno::EINVAL, "the DRM framebuffer size must not be empty");
+            return_errno!(Errno::EINVAL, "the DRM framebuffer size must not be empty");
         }
 
         // Calculate the minimum GEM object size needed to contain the framebuffer,
@@ -59,7 +59,7 @@ impl DrmFramebuffer {
                 )
             })?;
         if (pitch as usize) < row_size {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "the DRM framebuffer pitch is smaller than one pixel row"
             );
@@ -77,7 +77,7 @@ impl DrmFramebuffer {
             })?;
 
         if required_size > gem_object.size() {
-            return_errno_with_message!(Errno::EINVAL, "the DRM framebuffer exceeds its GEM object");
+            return_errno!(Errno::EINVAL, "the DRM framebuffer exceeds its GEM object");
         }
 
         Ok(Self {

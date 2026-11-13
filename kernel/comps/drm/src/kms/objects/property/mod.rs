@@ -146,7 +146,7 @@ impl DrmPropertyAttachments {
         initial_value: KmsObjectPropValue,
     ) -> Result<()> {
         if self.contains(property.id()) {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EEXIST,
                 "the property is already attached to the KMS object"
             );

@@ -114,7 +114,7 @@ fn open_rootfs_from_candidates(
         }
     }
 
-    return_errno_with_message!(Errno::ENODEV, "no root filesystem type could mount root")
+    return_errno!(Errno::ENODEV, "no root filesystem type could mount root")
 }
 
 fn rootfs_flags() -> (FsFlags, PerMountFlags) {

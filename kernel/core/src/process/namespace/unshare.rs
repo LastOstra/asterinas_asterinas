@@ -41,7 +41,7 @@ impl ContextUnshareAdminApi for Context<'_> {
 
     fn unshare_namespaces(&self, flags: CloneFlags) -> Result<()> {
         if flags.contains(CloneFlags::CLONE_NEWUSER) {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "cloning a new user namespace is not supported"
             );

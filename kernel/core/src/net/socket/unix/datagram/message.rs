@@ -59,18 +59,18 @@ impl MessageQueue {
     ) -> Result<usize> {
         let mut inner = self.inner.lock();
         let Some(inner) = inner.as_mut() else {
-            return_errno_with_message!(Errno::ECONNREFUSED, "the target socket is closed");
+            return_errno!(Errno::ECONNREFUSED, "the target socket is closed");
         };
         if inner.is_shutdown {
-            return_errno_with_message!(Errno::EPIPE, "the target socket is shut down");
+            return_errno!(Errno::EPIPE, "the target socket is shut down");
         }
 
         let len = reader.sum_lens();
         if len > UNIX_DATAGRAM_DEFAULT_BUF_SIZE {
-            return_errno_with_message!(Errno::EMSGSIZE, "the message is too large");
+            return_errno!(Errno::EMSGSIZE, "the message is too large");
         }
         if UNIX_DATAGRAM_DEFAULT_BUF_SIZE - inner.total_length < len {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EAGAIN,
                 "the receive buffer does not have enough space"
             );
@@ -183,7 +183,7 @@ impl MessageReceiver {
 
         let Some(msg) = inner.messages.front() else {
             if !inner.is_shutdown {
-                return_errno_with_message!(Errno::EAGAIN, "the receive buffer is empty");
+                return_errno!(Errno::EAGAIN, "the receive buffer is empty");
             } else {
                 return Ok((
                     RecvOutput::new_for_packet(flags, 0, 0),

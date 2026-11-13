@@ -201,7 +201,7 @@ impl SignalFile {
         }
 
         if count == 0 {
-            return_errno_with_message!(Errno::EAGAIN, "no signals are pending");
+            return_errno!(Errno::EAGAIN, "no signals are pending");
         }
         Ok(count * size_of::<SignalfdSiginfo>())
     }
@@ -223,7 +223,7 @@ impl Pollable for SignalFile {
 impl FileLike for SignalFile {
     fn read(&self, writer: &mut VmWriter) -> Result<usize> {
         if writer.avail() < size_of::<SignalfdSiginfo>() {
-            return_errno_with_message!(Errno::EINVAL, "the signal buffer is too small");
+            return_errno!(Errno::EINVAL, "the signal buffer is too small");
         }
 
         let thread = current_thread!();

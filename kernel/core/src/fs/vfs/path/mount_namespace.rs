@@ -295,7 +295,7 @@ impl MountNamespace {
             if checked_root_dentries.insert(root_dentry.key())
                 && self.would_form_mnt_ns_loop(root_dentry)
             {
-                return_errno_with_message!(
+                return_errno!(
                     Errno::ELOOP,
                     "the mount tree contains a mount namespace file that would create a namespace loop"
                 );
@@ -344,7 +344,7 @@ impl NsCommonOps for MountNamespace {
     }
 
     fn parent(&self) -> Result<&Arc<Self>> {
-        return_errno_with_message!(
+        return_errno!(
             Errno::EINVAL,
             "a mount namespace does not have a parent namespace"
         );

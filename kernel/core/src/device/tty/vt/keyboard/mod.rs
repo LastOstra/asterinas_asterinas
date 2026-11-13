@@ -140,7 +140,7 @@ impl VtKeyboard {
         match mode {
             // TODO: Add support for Raw mode.
             KeyboardMode::Raw => {
-                return_errno_with_message!(Errno::EINVAL, "the keyboard mode is not supported")
+                return_errno!(Errno::EINVAL, "the keyboard mode is not supported")
             }
             KeyboardMode::Xlate
             | KeyboardMode::MediumRaw

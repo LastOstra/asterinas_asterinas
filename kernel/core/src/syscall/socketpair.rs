@@ -47,7 +47,7 @@ pub(super) fn sys_socketpair(
         (CSocketAddrFamily::AF_UNIX, SockType::SOCK_RAW | SockType::SOCK_DGRAM) => {
             file_pair!(UnixDatagramSocket::new_pair(nonblocking))
         }
-        _ => return_errno_with_message!(
+        _ => return_errno!(
             Errno::EAFNOSUPPORT,
             "creating a socket pair for this family is not supported"
         ),

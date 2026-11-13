@@ -61,7 +61,7 @@ impl TryFrom<(u32, u32)> for DrmPixelFormat {
             (32, 24) => Ok(DrmPixelFormat::XRGB8888),
             (32, 30) => Ok(DrmPixelFormat::XRGB2101010),
             (32, 32) => Ok(DrmPixelFormat::ARGB8888),
-            _ => return_errno_with_message!(
+            _ => return_errno!(
                 Errno::EINVAL,
                 "the legacy DRM framebuffer format is unsupported"
             ),

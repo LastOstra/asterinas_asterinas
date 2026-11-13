@@ -71,7 +71,7 @@ pub(crate) fn futex_wait_bitset(
     );
 
     if bitset == 0 {
-        return_errno_with_message!(Errno::EINVAL, "at least one bit should be set");
+        return_errno!(Errno::EINVAL, "at least one bit should be set");
     }
 
     let user_space = ctx.user_space();
@@ -105,7 +105,7 @@ pub(crate) fn futex_wait_bitset(
     };
 
     if val != futex_val.cast_unsigned() {
-        return_errno_with_message!(
+        return_errno!(
             Errno::EAGAIN,
             "the futex word does not contain the expected value"
         );
@@ -132,7 +132,7 @@ pub(crate) fn futex_wait_bitset(
         Err(err)
     } else {
         // Spurious wakeups. Return `EINTR` anyway.
-        return_errno_with_message!(
+        return_errno!(
             Errno::EINTR,
             "the current thread is interrupted by a signal"
         );
@@ -159,7 +159,7 @@ pub(crate) fn futex_wake_bitset(
     );
 
     if bitset == 0 {
-        return_errno_with_message!(Errno::EINVAL, "at least one bit should be set");
+        return_errno!(Errno::EINVAL, "at least one bit should be set");
     }
 
     let futex_key = FutexKey::new(futex_addr, bitset, &current_userspace!(), visibility)?;
@@ -581,7 +581,7 @@ impl FutexKey {
         // boundary."
         // Reference: <https://man7.org/linux/man-pages/man2/futex.2.html>.
         if !addr.is_multiple_of(align_of::<u32>()) {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "the futex word is not aligned on a four-byte boundary"
             );

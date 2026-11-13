@@ -87,7 +87,7 @@ impl OverlayInode {
         if source_is_origin_backed {
             let upper_parent = self.writable_upper();
             if !fs.policy().can_store_private_xattr() {
-                return_errno_with_message!(
+                return_errno!(
                     Errno::EOPNOTSUPP,
                     "the upper filesystem cannot store the impure marker required for a link"
                 );

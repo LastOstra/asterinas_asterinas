@@ -45,7 +45,7 @@ pub(in super::super) struct Uuid(u64);
 impl Uuid {
     fn try_new(value: u64) -> Result<Self> {
         if value == 0 {
-            return_errno_with_message!(Errno::EINVAL, "the overlay uuid must be non-zero");
+            return_errno!(Errno::EINVAL, "the overlay uuid must be non-zero");
         }
         Ok(Self(value))
     }
@@ -81,7 +81,7 @@ impl OverlayInuseSlot {
     /// Claims this slot for a non-zero owner token.
     fn try_claim(&self, token: u64) -> Result<()> {
         if token == 0 {
-            return_errno_with_message!(Errno::EINVAL, "the overlay inuse token must be non-zero");
+            return_errno!(Errno::EINVAL, "the overlay inuse token must be non-zero");
         }
         self.owner_token
             .compare_exchange(0, token, Ordering::Acquire, Ordering::Relaxed)
@@ -149,13 +149,13 @@ impl UpperWorkdirInuse {
     /// Validates the workdir/upper pair: one underlying filesystem, one mount, distinct roots.
     pub(super) fn validate_pair(upper: &Path, workdir: &Path) -> Result<()> {
         if upper.metadata()?.container_dev_id != workdir.metadata()?.container_dev_id {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "workdir and upperdir must be on the same underlying filesystem"
             );
         }
         if !Arc::ptr_eq(upper.mount_node(), workdir.mount_node()) {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "workdir and upperdir must reside under the same mount"
             );
@@ -310,7 +310,7 @@ impl UpperWorkdirInuse {
             Ok(written) if written == OVERLAY_UUID_SIZE => {
                 Ok(Some(Uuid::try_new(u64::from_le_bytes(value))?))
             }
-            Ok(_) => return_errno_with_message!(
+            Ok(_) => return_errno!(
                 Errno::EINVAL,
                 "the persisted overlay uuid must be 8 bytes long"
             ),

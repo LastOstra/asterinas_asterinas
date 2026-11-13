@@ -21,7 +21,7 @@ pub(super) fn sys_sched_getaffinity(
         0 => ctx.thread.atomic_cpu_affinity().load(Ordering::Relaxed),
         _ => match pid_table::pid_table_mut().get_thread(tid) {
             Some(thread) => thread.atomic_cpu_affinity().load(Ordering::Relaxed),
-            None => return_errno_with_message!(Errno::ESRCH, "the target thread does not exist"),
+            None => return_errno!(Errno::ESRCH, "the target thread does not exist"),
         },
     };
 
@@ -53,7 +53,7 @@ pub(super) fn sys_sched_setaffinity(
                     .atomic_cpu_affinity()
                     .store(&user_cpu_set, Ordering::Relaxed);
             }
-            None => return_errno_with_message!(Errno::ESRCH, "the target thread does not exist"),
+            None => return_errno!(Errno::ESRCH, "the target thread does not exist"),
         },
     }
 
@@ -72,7 +72,7 @@ fn read_cpu_set_from(
     cpu_set_ptr: Vaddr,
 ) -> Result<CpuSet> {
     if cpuset_size == 0 {
-        return_errno_with_message!(Errno::EINVAL, "invalid cpuset size");
+        return_errno!(Errno::EINVAL, "invalid cpuset size");
     }
 
     let num_cpus = num_cpus();
@@ -94,7 +94,7 @@ fn read_cpu_set_from(
     }
 
     if ret_set.is_empty() {
-        return_errno_with_message!(Errno::EINVAL, "empty cpuset");
+        return_errno!(Errno::EINVAL, "empty cpuset");
     }
 
     Ok(ret_set)
@@ -108,7 +108,7 @@ fn write_cpu_set_to(
     cpu_set_ptr: Vaddr,
 ) -> Result<usize> {
     if cpuset_size == 0 {
-        return_errno_with_message!(Errno::EINVAL, "invalid cpuset size");
+        return_errno!(Errno::EINVAL, "invalid cpuset size");
     }
 
     let num_cpus = num_cpus();

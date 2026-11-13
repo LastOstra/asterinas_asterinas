@@ -34,13 +34,13 @@ impl UnixSocketAddr {
         if matches!(self, UnixSocketAddr::Unnamed) {
             Ok(())
         } else {
-            return_errno_with_message!(Errno::EINVAL, "the socket is already bound");
+            return_errno!(Errno::EINVAL, "the socket is already bound");
         }
     }
 
     pub(super) fn connect(&self) -> Result<UnixSocketAddrKey> {
         let bound = match self {
-            Self::Unnamed => return_errno_with_message!(
+            Self::Unnamed => return_errno!(
                 Errno::EINVAL,
                 "the unnamed UNIX domain socket address is not valid for connecting"
             ),
@@ -64,7 +64,7 @@ impl TryFrom<SocketAddr> for UnixSocketAddr {
     fn try_from(value: SocketAddr) -> Result<Self> {
         match value {
             SocketAddr::Unix(unix_socket_addr) => Ok(unix_socket_addr),
-            _ => return_errno_with_message!(
+            _ => return_errno!(
                 Errno::EINVAL,
                 "the socket address is not a valid UNIX domain socket address"
             ),

@@ -57,16 +57,16 @@ fn build_proxy_from_pid_file(
     ctx: &Context,
 ) -> Result<NsProxy> {
     if flags.is_empty() {
-        return_errno_with_message!(Errno::EINVAL, "flags must be specified with a PID file");
+        return_errno!(Errno::EINVAL, "flags must be specified with a PID file");
     }
 
     // Check for any flags that are not namespace-related.
     if !(flags - CloneFlags::CLONE_NS_FLAGS).is_empty() {
-        return_errno_with_message!(Errno::EINVAL, "invalid flags are specified with a PID file");
+        return_errno!(Errno::EINVAL, "invalid flags are specified with a PID file");
     }
 
     if flags.contains(CloneFlags::CLONE_NEWUSER) {
-        return_errno_with_message!(Errno::EINVAL, "setting a user namespace is not supported");
+        return_errno!(Errno::EINVAL, "setting a user namespace is not supported");
     }
 
     check_unsupported_ns_flags(flags)?;
@@ -77,7 +77,7 @@ fn build_proxy_from_pid_file(
         .main_thread();
     let target_proxy = target_thread.as_posix_thread().unwrap().ns_proxy().lock();
     let Some(target_proxy) = target_proxy.as_ref() else {
-        return_errno_with_message!(Errno::ESRCH, "the target process has exited");
+        return_errno!(Errno::ESRCH, "the target process has exited");
     };
 
     let current_proxy = ctx.thread_local.borrow_ns_proxy();
@@ -116,7 +116,7 @@ fn build_proxy_from_ns_file(
     ctx: &Context,
 ) -> Result<NsProxy> {
     if flags.contains(CloneFlags::CLONE_NEWUSER) {
-        return_errno_with_message!(Errno::EINVAL, "setting a user namespace is not supported");
+        return_errno!(Errno::EINVAL, "setting a user namespace is not supported");
     }
 
     check_unsupported_ns_flags(flags)?;
@@ -147,7 +147,7 @@ fn build_proxy_from_ns_file(
     // TODO: Support setting other namespaces from the ns file.
 
     if !applied {
-        return_errno_with_message!(Errno::EINVAL, "invalid flags are specified with a ns file");
+        return_errno!(Errno::EINVAL, "invalid flags are specified with a ns file");
     }
 
     Ok(builder.build())
@@ -163,7 +163,7 @@ fn try_apply_ns_from_inode<T: NsCommonOps>(
     };
 
     if !flags.is_empty() && flags != T::TYPE.into() {
-        return_errno_with_message!(
+        return_errno!(
             Errno::EINVAL,
             "the flags do not match the type of the ns file"
         );
@@ -207,7 +207,7 @@ fn set_mnt_ns(
     check_current_user_ns_cap(ctx, CapSet::SYS_CHROOT)?;
 
     if ctx.thread_local.is_fs_shared() {
-        return_errno_with_message!(
+        return_errno!(
             Errno::EINVAL,
             "setting a mount namespace is not allowed with shared filesystem information"
         );

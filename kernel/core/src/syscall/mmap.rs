@@ -112,7 +112,7 @@ fn do_sys_mmap(
         if option.flags().contains(MMapFlags::MAP_ANONYMOUS) {
             // Linux rejects MAP_SHARED_VALIDATE for anonymous mappings.
             if option.typ() == MMapType::SharedValidate {
-                return_errno_with_message!(
+                return_errno!(
                     Errno::EINVAL,
                     "MAP_SHARED_VALIDATE and MAP_ANONYMOUS cannot be used together"
                 );
@@ -132,16 +132,16 @@ fn do_sys_mmap(
             let file = get_file_fast!(&mut file_table, raw_fd.try_into()?).into_owned();
 
             if file.status_flags().contains(StatusFlags::O_PATH) {
-                return_errno_with_message!(Errno::EBADF, "the file is opened as a path");
+                return_errno!(Errno::EBADF, "the file is opened as a path");
             }
 
             let access_mode = file.access_mode();
             if !access_mode.is_readable() {
-                return_errno_with_message!(Errno::EACCES, "the file is not opened readable");
+                return_errno!(Errno::EACCES, "the file is not opened readable");
             }
             if option.typ().is_shared() && !access_mode.is_writable() {
                 if vm_perms.contains(VmPerms::WRITE) {
-                    return_errno_with_message!(Errno::EACCES, "the file is not opened writable");
+                    return_errno!(Errno::EACCES, "the file is not opened writable");
                 }
                 vm_may_perms.remove(VmPerms::MAY_WRITE);
             }
@@ -151,7 +151,7 @@ fn do_sys_mmap(
             let mount_flags = file.path().mount_node().flags();
             if mount_flags.contains(PerMountFlags::NOEXEC) {
                 if vm_perms.contains(VmPerms::EXEC) {
-                    return_errno_with_message!(
+                    return_errno!(
                         Errno::EPERM,
                         "the file is on a file system mounted with `noexec`"
                     );
@@ -174,11 +174,11 @@ fn do_sys_mmap(
 
 fn check_len(len: usize) -> Result<usize> {
     if len == 0 {
-        return_errno_with_message!(Errno::EINVAL, "the mapping length is zero");
+        return_errno!(Errno::EINVAL, "the mapping length is zero");
     }
 
     if len > VMAR_CAP_ADDR {
-        return_errno_with_message!(Errno::ENOMEM, "the mapping length is too large");
+        return_errno!(Errno::ENOMEM, "the mapping length is too large");
     }
 
     Ok(len.align_up(PAGE_SIZE))
@@ -186,15 +186,15 @@ fn check_len(len: usize) -> Result<usize> {
 
 fn check_addr(addr: Vaddr, len: usize) -> Result<()> {
     if addr > VMAR_CAP_ADDR - len {
-        return_errno_with_message!(Errno::ENOMEM, "the mapping address is too high");
+        return_errno!(Errno::ENOMEM, "the mapping address is too high");
     }
 
     if !addr.is_multiple_of(PAGE_SIZE) {
-        return_errno_with_message!(Errno::EINVAL, "the mapping address is not aligned");
+        return_errno!(Errno::EINVAL, "the mapping address is not aligned");
     }
 
     if addr < VMAR_LOWEST_ADDR {
-        return_errno_with_message!(Errno::EPERM, "the mapping address is too low");
+        return_errno!(Errno::EPERM, "the mapping address is too low");
     }
 
     Ok(())
@@ -222,7 +222,7 @@ fn adjust_addr_hint(mut addr: Vaddr, len: usize) -> Vaddr {
 
 fn check_offset(offset: usize, len: usize, flags: MMapFlags) -> Result<()> {
     if !offset.is_multiple_of(PAGE_SIZE) {
-        return_errno_with_message!(Errno::EINVAL, "the mapping offset is not aligned");
+        return_errno!(Errno::EINVAL, "the mapping offset is not aligned");
     }
 
     if flags.contains(MMapFlags::MAP_ANONYMOUS) {
@@ -233,7 +233,7 @@ fn check_offset(offset: usize, len: usize, flags: MMapFlags) -> Result<()> {
         .checked_add(len)
         .is_none_or(|end| end >= isize::MAX as usize)
     {
-        return_errno_with_message!(Errno::EOVERFLOW, "the mapping offset overflows");
+        return_errno!(Errno::EOVERFLOW, "the mapping offset overflows");
     }
 
     Ok(())
@@ -326,7 +326,7 @@ impl TryFrom<u32> for MMapOptions {
         // `MAP_SHARED_VALIDATE` is specified.
         let flags_raw = value & !MAP_TYPE_MASK;
         if typ == MMapType::SharedValidate && (flags_raw & !LEGACY_MMAP_FLAGS.bits()) != 0 {
-            return_errno_with_message!(Errno::EOPNOTSUPP, "the mapping flags are not supported");
+            return_errno!(Errno::EOPNOTSUPP, "the mapping flags are not supported");
         }
         let flags = MMapFlags::from_bits_truncate(flags_raw);
 

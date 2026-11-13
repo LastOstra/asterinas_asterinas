@@ -24,11 +24,11 @@ impl MappedObject for DrmGemShmemMappedObject {
 
     fn handle_page_fault(&self, offset: usize, mut handle: MapHandle) -> Result<()> {
         let Some(object_offset) = self.object_offset.checked_add(offset) else {
-            return_errno_with_message!(Errno::EFAULT, "the GEM page offset overflows");
+            return_errno!(Errno::EFAULT, "the GEM page offset overflows");
         };
         let page_index = object_offset / PAGE_SIZE;
         let Some(page) = self.backend.pages.get(page_index) else {
-            return_errno_with_message!(Errno::EFAULT, "the GEM page offset is out of bounds");
+            return_errno!(Errno::EFAULT, "the GEM page offset is out of bounds");
         };
 
         handle.map_frame(offset, page.clone());

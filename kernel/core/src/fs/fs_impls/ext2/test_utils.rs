@@ -25,7 +25,7 @@ use super::{
 };
 use crate::{
     fs::{file::InodeType, fs_impls::ext2::super_block::SuperBlock, vfs::file_system::FsFlags},
-    prelude::{return_errno_with_message, *},
+    prelude::{return_errno, *},
     time::clocks,
 };
 const DOT_BYTE: &[u8] = b".";
@@ -362,7 +362,7 @@ pub(super) fn validate_group0_layout(sb: &SuperBlock, layout: &Group0Layout) -> 
         || !in_range_fn(layout.inode_bitmap_bid)
         || !in_range_fn(layout.inode_table_bid)
     {
-        return_errno_with_message!(Errno::EINVAL, "test layout block out of group range");
+        return_errno!(Errno::EINVAL, "test layout block out of group range");
     }
 
     let inode_table_last = layout
@@ -370,20 +370,20 @@ pub(super) fn validate_group0_layout(sb: &SuperBlock, layout: &Group0Layout) -> 
         .saturating_add(sb.nr_inode_table_blocks_per_group())
         .saturating_sub(1);
     if inode_table_last > last {
-        return_errno_with_message!(Errno::EINVAL, "test layout inode table out of range");
+        return_errno!(Errno::EINVAL, "test layout inode table out of range");
     }
 
     if layout.block_bitmap_bid == layout.inode_bitmap_bid
         || layout.block_bitmap_bid == layout.group_desc_bid
         || layout.inode_bitmap_bid == layout.group_desc_bid
     {
-        return_errno_with_message!(Errno::EINVAL, "test layout metadata blocks overlap");
+        return_errno!(Errno::EINVAL, "test layout metadata blocks overlap");
     }
 
     if layout.block_bitmap_bid >= layout.inode_table_bid
         && layout.block_bitmap_bid <= inode_table_last
     {
-        return_errno_with_message!(
+        return_errno!(
             Errno::EINVAL,
             "test layout block bitmap overlaps inode table"
         );
@@ -391,18 +391,18 @@ pub(super) fn validate_group0_layout(sb: &SuperBlock, layout: &Group0Layout) -> 
     if layout.inode_bitmap_bid >= layout.inode_table_bid
         && layout.inode_bitmap_bid <= inode_table_last
     {
-        return_errno_with_message!(
+        return_errno!(
             Errno::EINVAL,
             "test layout inode bitmap overlaps inode table"
         );
     }
     if layout.group_desc_bid >= layout.inode_table_bid && layout.group_desc_bid <= inode_table_last
     {
-        return_errno_with_message!(Errno::EINVAL, "test layout group desc overlaps inode table");
+        return_errno!(Errno::EINVAL, "test layout group desc overlaps inode table");
     }
 
     if layout.first_data_bid <= first {
-        return_errno_with_message!(Errno::EINVAL, "test layout first_data invalid");
+        return_errno!(Errno::EINVAL, "test layout first_data invalid");
     }
 
     Ok(())

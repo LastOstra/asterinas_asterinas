@@ -17,7 +17,7 @@ impl Vmar {
             return vm_mapping.handle_page_fault(&self.vm_space, page_fault_info, &mut rss_delta);
         }
 
-        return_errno_with_message!(
+        return_errno!(
             Errno::EACCES,
             "no VM mappings contain the page fault address"
         );

@@ -246,7 +246,7 @@ impl FileOps for PseudoInode {
         _writer: &mut VmWriter,
         _status: StatusFlags,
     ) -> Result<usize> {
-        return_errno_with_message!(
+        return_errno!(
             Errno::ESPIPE,
             "pseudo inodes cannot be read at a specific offset"
         );
@@ -258,7 +258,7 @@ impl FileOps for PseudoInode {
         _reader: &mut VmReader,
         _status: StatusFlags,
     ) -> Result<usize> {
-        return_errno_with_message!(
+        return_errno!(
             Errno::ESPIPE,
             "pseudo inodes cannot be written at a specific offset"
         );
@@ -271,7 +271,7 @@ impl Inode for PseudoInode {
     }
 
     fn resize(&self, _self_dentry: &Dentry, _new_size: usize) -> Result<()> {
-        return_errno_with_message!(Errno::EINVAL, "pseudo inodes can not be resized");
+        return_errno!(Errno::EINVAL, "pseudo inodes can not be resized");
     }
 
     fn metadata(&self) -> Result<Metadata> {
@@ -296,7 +296,7 @@ impl Inode for PseudoInode {
 
     fn set_mode(&self, _self_dentry: &Dentry, mode: InodeMode) -> Result<()> {
         if self.is_anon {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EOPNOTSUPP,
                 "the mode of anonymous inodes cannot be changed"
             );

@@ -43,7 +43,7 @@ pub(super) fn do_sys_poll(
             .get_rlimit(ResourceType::RLIMIT_NOFILE)
             .get_cur()
     {
-        return_errno_with_message!(
+        return_errno!(
             Errno::EINVAL,
             "the `nfds` value exceeds the `RLIMIT_NOFILE` value"
         )

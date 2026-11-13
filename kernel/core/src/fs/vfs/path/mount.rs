@@ -333,10 +333,10 @@ impl Mount {
     ) -> Result<Arc<Self>> {
         let skip_unbindable = clone_mode == MountTreeCloneMode::Bind;
         if skip_unbindable && self.is_unbindable() {
-            return_errno_with_message!(Errno::EINVAL, "the source mount is unbindable");
+            return_errno!(Errno::EINVAL, "the source mount is unbindable");
         }
         if clone_mode != MountTreeCloneMode::Bind && try_get_mnt_ns_inode(root_dentry).is_some() {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "a mount namespace file cannot be the root of this mount tree clone"
             );

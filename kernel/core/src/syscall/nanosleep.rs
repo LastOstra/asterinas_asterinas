@@ -100,10 +100,7 @@ fn do_clock_nanosleep(
             | ClockId::CLOCK_MONOTONIC_RAW
             | ClockId::CLOCK_REALTIME_COARSE
             | ClockId::CLOCK_MONOTONIC_COARSE => {
-                return_errno_with_message!(
-                    Errno::EOPNOTSUPP,
-                    "unsupported clockid for clock_nanosleep"
-                );
+                return_errno!(Errno::EOPNOTSUPP, "unsupported clockid for clock_nanosleep");
             }
         }
     };
@@ -129,7 +126,7 @@ fn do_clock_nanosleep(
                     .write_val(remain_timespec_addr, &remaining_timespec)?;
             }
 
-            return_errno_with_message!(Errno::EINTR, "sleep was interrupted");
+            return_errno!(Errno::EINTR, "sleep was interrupted");
         }
         Ok(()) | Err(_) => unreachable!(),
     }

@@ -65,7 +65,7 @@ impl<Message: QueueableMessage> MessageQueue<Message> {
         }
 
         let Some(message) = self.messages.front() else {
-            return_errno_with_message!(Errno::EAGAIN, "the receive buffer is empty");
+            return_errno!(Errno::EAGAIN, "the receive buffer is empty");
         };
 
         let length = message.total_len();

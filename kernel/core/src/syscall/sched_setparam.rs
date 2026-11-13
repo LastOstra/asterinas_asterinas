@@ -7,7 +7,7 @@ use crate::{prelude::*, sched::SchedPolicy, thread::Tid};
 
 pub(super) fn sys_sched_setparam(tid: Tid, addr: Vaddr, ctx: &Context) -> Result<SyscallReturn> {
     if addr == 0 {
-        return_errno_with_message!(Errno::EINVAL, "invalid user space address");
+        return_errno!(Errno::EINVAL, "invalid user space address");
     }
 
     let prio: i32 = ctx.user_space().read_val(addr)?;
@@ -23,7 +23,7 @@ pub(super) fn sys_sched_setparam(tid: Tid, addr: Vaddr, ctx: &Context) -> Result
                     })?;
             }
             _ if prio != 0 => {
-                return_errno_with_message!(Errno::EINVAL, "invalid scheduling priority")
+                return_errno!(Errno::EINVAL, "invalid scheduling priority")
             }
             _ => {}
         }

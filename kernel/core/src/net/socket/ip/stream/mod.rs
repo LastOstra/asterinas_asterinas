@@ -314,11 +314,11 @@ impl StreamSocket {
         match state.as_mut() {
             State::Init(init_stream) => init_stream.finish_last_connect(),
             State::Connecting(_) => {
-                return_errno_with_message!(Errno::EAGAIN, "the connection is pending")
+                return_errno!(Errno::EAGAIN, "the connection is pending")
             }
             State::Connected(connected_stream) => connected_stream.finish_last_connect(),
             State::Listen(_) => {
-                return_errno_with_message!(Errno::EISCONN, "the socket is listening")
+                return_errno!(Errno::EISCONN, "the socket is listening")
             }
         }
     }
@@ -327,7 +327,7 @@ impl StreamSocket {
         let state = self.read_updated_state();
 
         let State::Listen(listen_stream) = state.as_ref() else {
-            return_errno_with_message!(Errno::EINVAL, "the socket is not listening");
+            return_errno!(Errno::EINVAL, "the socket is not listening");
         };
 
         let accepted = listen_stream.try_accept().map(|connected_stream| {
@@ -366,10 +366,10 @@ impl StreamSocket {
                 return result;
             }
             State::Listen(_) => {
-                return_errno_with_message!(Errno::ENOTCONN, "the socket is not connected")
+                return_errno!(Errno::ENOTCONN, "the socket is not connected")
             }
             State::Connecting(_) => {
-                return_errno_with_message!(Errno::EAGAIN, "the socket is connecting")
+                return_errno!(Errno::EAGAIN, "the socket is connecting")
             }
         };
 
@@ -399,12 +399,12 @@ impl StreamSocket {
                 return result;
             }
             State::Listen(_) => {
-                return_errno_with_message!(Errno::EPIPE, "the socket is not connected");
+                return_errno!(Errno::EPIPE, "the socket is not connected");
             }
             State::Connecting(_) => {
                 // FIXME: Linux indeed allows data to be buffered at this point. Can we do
                 // something similar?
-                return_errno_with_message!(Errno::EAGAIN, "the socket is connecting")
+                return_errno!(Errno::EAGAIN, "the socket is connecting")
             }
         };
 
@@ -464,7 +464,7 @@ impl SocketPrivate for StreamSocket {
             IpAddressFamily::IPv4 => ipv4_ioctl(raw_ioctl),
             IpAddressFamily::IPv6 => {
                 // TODO: Add support for IPv6 ioctl commands.
-                return_errno_with_message!(Errno::ENOTTY, "the socket ioctl command is unknown")
+                return_errno!(Errno::ENOTTY, "the socket ioctl command is unknown")
             }
         }
 
@@ -478,7 +478,7 @@ impl Socket for StreamSocket {
 
         let mut state = self.write_updated_state();
         let State::Init(init_stream) = state.as_mut() else {
-            return_errno_with_message!(Errno::EINVAL, "the socket is already bound to an address");
+            return_errno!(Errno::EINVAL, "the socket is already bound to an address");
         };
 
         let can_reuse = self.options.read().socket.reuse_addr();
@@ -556,7 +556,7 @@ impl Socket for StreamSocket {
                 connected_stream.iface().clone(),
             ),
             // TODO: shutdown listening stream
-            _ => return_errno_with_message!(Errno::EINVAL, "cannot shutdown"),
+            _ => return_errno!(Errno::EINVAL, "cannot shutdown"),
         };
 
         drop(state);
@@ -584,7 +584,7 @@ impl Socket for StreamSocket {
         let state = self.read_updated_state();
         let remote_endpoint = match state.as_ref() {
             State::Init(_) | State::Listen(_) => {
-                return_errno_with_message!(Errno::ENOTCONN, "the socket is not connected")
+                return_errno!(Errno::ENOTCONN, "the socket is not connected")
             }
             State::Connecting(connecting_stream) => connecting_stream.remote_endpoint(),
             State::Connected(connected_stream) => {
@@ -596,7 +596,7 @@ impl Socket for StreamSocket {
                 // socket to TCP_CLOSE. smoltcp keeps TIME_WAIT on the original socket.
                 // Reference: <https://elixir.bootlin.com/linux/v7.1/source/net/ipv4/tcp_minisocks.c#L393>.
                 if !connected_stream.raw_with(|socket| socket.is_open()) {
-                    return_errno_with_message!(Errno::ENOTCONN, "the socket is not connected");
+                    return_errno!(Errno::ENOTCONN, "the socket is not connected");
                 }
                 connected_stream.remote_endpoint()
             }
@@ -746,10 +746,7 @@ impl Socket for StreamSocket {
                 let inq = options.tcp.receive_inq();
                 tcp_inq.set(inq);
             }
-            _ => return_errno_with_message!(
-                Errno::ENOPROTOOPT,
-                "the socket option to get is unknown"
-            ),
+            _ => return_errno!(Errno::ENOPROTOOPT, "the socket option to get is unknown"),
         });
 
         Ok(())
@@ -817,10 +814,7 @@ fn do_tcp_setsockopt(
 
             let maxseg = tcp_maxseg.get().unwrap();
             if *maxseg < MIN_MAXSEG || *maxseg > MAX_MAXSEG {
-                return_errno_with_message!(
-                    Errno::EINVAL,
-                    "the maximum segment size is out of bounds"
-                );
+                return_errno!(Errno::EINVAL, "the maximum segment size is out of bounds");
             }
             options.tcp.set_maxseg(*maxseg);
         }
@@ -830,7 +824,7 @@ fn do_tcp_setsockopt(
 
             let keepidle = tcp_keep_idle.get().unwrap();
             if *keepidle < MIN_KEEP_IDLE || *keepidle > MAX_KEEP_IDLE {
-                return_errno_with_message!(Errno::EINVAL, "the keep idle time is out of bounds");
+                return_errno!(Errno::EINVAL, "the keep idle time is out of bounds");
             }
             options.tcp.set_keep_idle(*keepidle);
 
@@ -843,10 +837,7 @@ fn do_tcp_setsockopt(
 
             let keepintvl = tcp_keep_intvl.get().unwrap();
             if *keepintvl < MIN_KEEP_INTVL || *keepintvl > MAX_KEEP_INTVL {
-                return_errno_with_message!(
-                    Errno::EINVAL,
-                    "the keepalive interval is out of bounds"
-                );
+                return_errno!(Errno::EINVAL, "the keepalive interval is out of bounds");
             }
             options.tcp.set_keep_intvl(*keepintvl);
 
@@ -859,7 +850,7 @@ fn do_tcp_setsockopt(
 
             let keepcnt = tcp_keep_cnt.get().unwrap();
             if *keepcnt < MIN_KEEP_CNT || *keepcnt > MAX_KEEP_CNT {
-                return_errno_with_message!(Errno::EINVAL, "the keepalive count is out of bounds");
+                return_errno!(Errno::EINVAL, "the keepalive count is out of bounds");
             }
             options.tcp.set_keep_cnt(*keepcnt);
 
@@ -870,7 +861,7 @@ fn do_tcp_setsockopt(
 
             let syncnt = tcp_syn_cnt.get().unwrap();
             if *syncnt < 1 || *syncnt > MAX_TCP_SYN_CNT {
-                return_errno_with_message!(Errno::EINVAL, "the SYN count is out of bounds");
+                return_errno!(Errno::EINVAL, "the SYN count is out of bounds");
             }
             options.tcp.set_syn_cnt(*syncnt);
         }
@@ -898,7 +889,7 @@ fn do_tcp_setsockopt(
         tcp_user_timeout @ UserTimeout => {
             let user_timeout = tcp_user_timeout.get().unwrap();
             if (*user_timeout as i32) < 0 {
-                return_errno_with_message!(Errno::EINVAL, "the user timeout cannot be negative");
+                return_errno!(Errno::EINVAL, "the user timeout cannot be negative");
             }
             options.tcp.set_user_timeout(*user_timeout);
         }
@@ -906,8 +897,7 @@ fn do_tcp_setsockopt(
             let inq = tcp_inq.get().unwrap();
             options.tcp.set_receive_inq(*inq);
         }
-        _ =>
-            return_errno_with_message!(Errno::ENOPROTOOPT, "the socket option to be set is unknown"),
+        _ => return_errno!(Errno::ENOPROTOOPT, "the socket option to be set is unknown"),
     });
 
     Ok(NeedIfacePoll::FALSE)
@@ -997,7 +987,7 @@ impl SetSocketLevelOption for (&State, &TcpOptionSet, &SocketTimeouts) {
 
 impl SetIpLevelOption for State {
     fn set_hdrincl(&self, _hdrincl: bool) -> Result<()> {
-        return_errno_with_message!(
+        return_errno!(
             Errno::ENOPROTOOPT,
             "IP_HDRINCL cannot be set on TCP sockets"
         );

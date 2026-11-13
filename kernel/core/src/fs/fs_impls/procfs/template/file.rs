@@ -142,7 +142,7 @@ pub(in procfs) trait ProcFileOps: Sync + Send {
     fn read_at(&self, offset: usize, writer: &mut VmWriter) -> Result<usize>;
 
     fn write_at(&self, _offset: usize, _reader: &mut VmReader) -> Result<usize> {
-        return_errno_with_message!(Errno::EPERM, "the file is not writable");
+        return_errno!(Errno::EPERM, "the file is not writable");
     }
 
     fn open(

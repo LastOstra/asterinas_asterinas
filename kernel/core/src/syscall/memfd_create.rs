@@ -43,7 +43,7 @@ pub(super) fn sys_memfd_create(
         }
 
         if memfd_flags.contains(MemfdFlags::MFD_NOEXEC_SEAL | MemfdFlags::MFD_EXEC) {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "`MFD_EXEC` and `MFD_NOEXEC_SEAL` cannot be specified together"
             );

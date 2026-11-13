@@ -37,7 +37,7 @@ impl CMsgSegHdr {
         // Validate `payload_len`.
         let reader_len = reader.sum_lens();
         if reader_len < payload_len {
-            return_errno_with_message!(Errno::EINVAL, "the reader length is too small");
+            return_errno!(Errno::EINVAL, "the reader length is too small");
         }
 
         Ok(payload_len)

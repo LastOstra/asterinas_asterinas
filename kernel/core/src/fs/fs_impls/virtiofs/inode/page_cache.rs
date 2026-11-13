@@ -403,7 +403,7 @@ fn validate_page_range(start_idx: usize, page_count: usize, file_size: usize) ->
         .ok_or_else(|| Error::with_message(Errno::EOVERFLOW, "virtiofs page offset overflow"))?;
 
     if last_offset >= file_size {
-        return_errno_with_message!(Errno::EINVAL, "virtiofs page is beyond EOF");
+        return_errno!(Errno::EINVAL, "virtiofs page is beyond EOF");
     }
 
     Ok(())

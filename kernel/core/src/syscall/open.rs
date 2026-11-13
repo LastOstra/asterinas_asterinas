@@ -106,10 +106,10 @@ fn do_open(
             if !open_args.creation_flags.contains(CreationFlags::O_CREAT)
                 || open_args.status_flags.contains(StatusFlags::O_PATH)
             {
-                return_errno_with_message!(Errno::ENOENT, "the file does not exist");
+                return_errno!(Errno::ENOENT, "the file does not exist");
             }
             if result.target_is_dir() {
-                return_errno_with_message!(
+                return_errno!(
                     Errno::EISDIR,
                     "O_CREAT is specified but the file is a directory"
                 );

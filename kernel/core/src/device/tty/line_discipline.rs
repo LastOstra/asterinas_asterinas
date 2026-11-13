@@ -135,7 +135,7 @@ impl LineDiscipline {
             // If the buffer is full, we should not push the character into the buffer. The caller
             // can silently ignore the error (if the input comes from the keyboard) or block the
             // user space (if the input comes from the pseduoterminal master).
-            return_errno_with_message!(Errno::EAGAIN, "the buffer is full");
+            return_errno!(Errno::EAGAIN, "the buffer is full");
         }
 
         // Raw mode
@@ -206,10 +206,7 @@ impl LineDiscipline {
         // If `vmin` is zero or `dst` is empty, the following condition will always be false. This
         // is correct, as the expected behavior is to never block or return `EAGAIN`.
         if self.buffer_len() < dst.len().min(vmin as _) {
-            return_errno_with_message!(
-                Errno::EAGAIN,
-                "the characters in the buffer are not enough"
-            );
+            return_errno!(Errno::EAGAIN, "the characters in the buffer are not enough");
         }
 
         for (i, dst_i) in dst.iter_mut().enumerate() {

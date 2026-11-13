@@ -68,7 +68,7 @@ impl FromStr for SysObjAction {
             .iter()
             .position(|action_str| s == *action_str)
         else {
-            return_errno_with_message!(Errno::EINVAL, "the string is not a valid `SysObj` action");
+            return_errno!(Errno::EINVAL, "the string is not a valid `SysObj` action");
         };
 
         Ok(SysObjAction::try_from(index as u8).unwrap())

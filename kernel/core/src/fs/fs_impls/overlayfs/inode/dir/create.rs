@@ -112,7 +112,7 @@ impl OverlayInode {
         // The opaque marker is written before the swap, so the whiteout is not deleted first.
         if is_directory {
             if !fs.policy().can_store_private_xattr() {
-                return_errno_with_message!(
+                return_errno!(
                     Errno::EOPNOTSUPP,
                     "the upper filesystem cannot store the opaque marker \
                      required for a directory over a whiteout"

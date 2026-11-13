@@ -132,7 +132,7 @@ fn do_faccessat(
         && inode.type_().is_regular_file()
         && path.mount_node().flags().contains(PerMountFlags::NOEXEC)
     {
-        return_errno_with_message!(
+        return_errno!(
             Errno::EACCES,
             "execution is not allowed on a file system mounted with `noexec`"
         );

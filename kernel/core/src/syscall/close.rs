@@ -54,7 +54,7 @@ pub(super) fn sys_close_range(
     debug!("first = {}, last = {}, flags = {}", first, last, raw_flags);
 
     if last < first {
-        return_errno_with_message!(Errno::EINVAL, "the range to close is invalid");
+        return_errno!(Errno::EINVAL, "the range to close is invalid");
     }
 
     let flags = CloseRangeFlags::from_bits(raw_flags)

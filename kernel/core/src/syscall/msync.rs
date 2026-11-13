@@ -18,14 +18,14 @@ pub(super) fn sys_msync(
     debug!("addr = 0x{:x}, len = {}, flags = {:?}", addr, len, flags);
 
     if flags.contains(MsyncFlags::MS_ASYNC | MsyncFlags::MS_SYNC) {
-        return_errno_with_message!(
+        return_errno!(
             Errno::EINVAL,
             "MS_ASYNC and MS_SYNC cannot be specified together"
         );
     }
 
     if !addr.is_multiple_of(PAGE_SIZE) {
-        return_errno_with_message!(Errno::EINVAL, "the mapping address is not aligned");
+        return_errno!(Errno::EINVAL, "the mapping address is not aligned");
     }
     if len == 0 {
         return Ok(SyscallReturn::Return(0));
@@ -33,7 +33,7 @@ pub(super) fn sys_msync(
     if VMAR_CAP_ADDR.checked_sub(addr).is_none_or(|gap| gap < len) {
         // FIXME: Linux returns `ENOMEM` if `(addr + len).align_up(PAGE_SIZE)` overflows. Here, we
         // perform a stricter validation.
-        return_errno_with_message!(Errno::ENOMEM, "the mapping range is not in userspace");
+        return_errno!(Errno::ENOMEM, "the mapping range is not in userspace");
     }
     let addr_range = addr..(addr + len).align_up(PAGE_SIZE);
 
@@ -43,7 +43,7 @@ pub(super) fn sys_msync(
 
     // Check if the range is fully mapped.
     if !query_guard.is_fully_mapped() {
-        return_errno_with_message!(
+        return_errno!(
             Errno::ENOMEM,
             "the range contains pages that are not mapped"
         );

@@ -33,7 +33,7 @@ impl ProcFileOps for PidMaxFileOps {
 
     fn write_at(&self, _offset: usize, _reader: &mut VmReader) -> Result<usize> {
         warn!("writing to `/proc/sys/kernel/pid_max` is not supported");
-        return_errno_with_message!(
+        return_errno!(
             Errno::EOPNOTSUPP,
             "writing to `/proc/sys/kernel/pid_max` is not supported"
         );

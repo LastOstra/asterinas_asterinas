@@ -181,26 +181,26 @@ impl<'a> DirBlockView<'a> {
         let end = self.offset + self.limit;
         let rec_len = header.rec_len as usize;
         if (rec_len & DirEntryHeader::ALIGN_MASK) != 0 {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EIO,
                 "invalid dir entry: rec_len is not 4-byte aligned"
             );
         }
         let name_len = header.name_len as usize;
         if name_len > NAME_MAX {
-            return_errno_with_message!(Errno::EIO, "invalid dir entry: name_len exceeds NAME_MAX");
+            return_errno!(Errno::EIO, "invalid dir entry: name_len exceeds NAME_MAX");
         }
         if header.ino != 0 && name_len == 0 {
-            return_errno_with_message!(Errno::EIO, "invalid dir entry: name_len is zero")
+            return_errno!(Errno::EIO, "invalid dir entry: name_len is zero")
         }
         if rec_len < DirEntryHeader::min_rec_len(name_len) as usize {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EIO,
                 "invalid dir entry: rec_len is smaller than required by name_len"
             );
         }
         if offset + rec_len > end {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EIO,
                 "invalid dir entry: entry extends beyond block limit"
             );
@@ -240,7 +240,7 @@ impl<'a> DirBlockView<'a> {
     pub(super) fn delete_entry(&self, entry_offset: usize, entry_rec_len: usize) -> Result<()> {
         let entry_end_offset = entry_offset + entry_rec_len;
         if entry_rec_len == 0 || entry_end_offset > self.limit {
-            return_errno_with_message!(Errno::EIO, "invalid dir entry rec_len for delete");
+            return_errno!(Errno::EIO, "invalid dir entry rec_len for delete");
         }
 
         // Walk from block-aligned start to find the predecessor entry.
@@ -256,18 +256,18 @@ impl<'a> DirBlockView<'a> {
                 .map_err(|_| Error::with_message(Errno::EIO, "dir entry header out of bounds"))?;
             let rec_len = header.rec_len as usize;
             if rec_len == 0 {
-                return_errno_with_message!(Errno::EIO, "zero rec_len in dir entry chain");
+                return_errno!(Errno::EIO, "zero rec_len in dir entry chain");
             }
             let next_entry_offset = current_entry_offset + rec_len;
             if next_entry_offset > self.limit {
-                return_errno_with_message!(Errno::EIO, "dir entry chain exceeds block limit");
+                return_errno!(Errno::EIO, "dir entry chain exceeds block limit");
             }
             prev_offset = Some(current_entry_offset);
             current_entry_offset = next_entry_offset;
         }
 
         if current_entry_offset != entry_offset {
-            return_errno_with_message!(Errno::EIO, "dir entry chain offset mismatch");
+            return_errno!(Errno::EIO, "dir entry chain offset mismatch");
         }
 
         if let Some(prev_entry_offset) = prev_offset {

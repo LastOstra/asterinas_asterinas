@@ -432,16 +432,13 @@ impl PathResolver {
         let put_old_path = self.lookup(&put_old_path)?;
 
         if new_root_path.type_() != InodeType::Dir || put_old_path.type_() != InodeType::Dir {
-            return_errno_with_message!(
-                Errno::ENOTDIR,
-                "`new_root` or `put_old` is not a directory"
-            );
+            return_errno!(Errno::ENOTDIR, "`new_root` or `put_old` is not a directory");
         }
 
         let current_ns_proxy = ctx.thread_local.borrow_ns_proxy();
         let current_mnt_ns = current_ns_proxy.unwrap().mnt_ns();
         if !current_mnt_ns.owns(&new_root_path.mount) || !current_mnt_ns.owns(&put_old_path.mount) {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "`new_root` or `put_old` is not in the current mount namespace"
             );
@@ -450,13 +447,13 @@ impl PathResolver {
         if self.root.mount.id() == new_root_path.mount.id()
             || self.root.mount.id() == put_old_path.mount.id()
         {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EBUSY,
                 "`new_root` or `put_old` is on the current root mount"
             );
         }
         if !new_root_path.is_mount_root() || !self.root.is_mount_root() {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "`new_root` or the current root is not a mount point"
             );
@@ -469,32 +466,32 @@ impl PathResolver {
             .parent()
             .and_then(|parent| parent.upgrade())
         else {
-            return_errno_with_message!(Errno::EINVAL, "`new_root` is on the rootfs mount");
+            return_errno!(Errno::EINVAL, "`new_root` is on the rootfs mount");
         };
         let Some(current_root_parent) =
             self.root.mount.parent().and_then(|parent| parent.upgrade())
         else {
-            return_errno_with_message!(Errno::EINVAL, "the current root is on the rootfs mount");
+            return_errno!(Errno::EINVAL, "the current root is on the rootfs mount");
         };
 
         if new_root_parent.is_shared()
             || current_root_parent.is_shared()
             || put_old_path.mount.is_shared()
         {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "`new_root` parent, current root parent, or `put_old` mount is shared"
             );
         }
 
         if !put_old_path.is_reachable_from(&new_root_path, &topology_guard) {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "`put_old` is not at or underneath `new_root`"
             );
         }
         if !new_root_path.is_reachable_from(&self.root, &topology_guard) {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "`new_root` is not at or underneath the current root"
             );
@@ -624,10 +621,10 @@ impl PathResolver {
         let dir_dentry = path.dentry.as_dir_dentry_or_err()?;
 
         if path.inode().check_permission(Permission::MAY_EXEC).is_err() {
-            return_errno_with_message!(Errno::EACCES, "the path cannot be looked up");
+            return_errno!(Errno::EACCES, "the path cannot be looked up");
         }
         if name.len() > NAME_MAX {
-            return_errno_with_message!(Errno::ENAMETOOLONG, "the path name is too long");
+            return_errno!(Errno::ENAMETOOLONG, "the path name is too long");
         }
 
         let target_path = if super::is_dot(name) {
@@ -730,7 +727,7 @@ impl PathResolver {
         debug_assert!(!relative_path.starts_with('/'));
 
         if relative_path.len() > PATH_MAX {
-            return_errno_with_message!(Errno::ENAMETOOLONG, "the path is too long");
+            return_errno!(Errno::ENAMETOOLONG, "the path is too long");
         }
         if relative_path.is_empty() {
             return Ok(LookupResult::Resolved(parent.clone()));
@@ -781,23 +778,20 @@ impl PathResolver {
                     .flags()
                     .contains(PerMountFlags::NOSYMFOLLOW)
                 {
-                    return_errno_with_message!(
+                    return_errno!(
                         Errno::ELOOP,
                         "the symlink is on a file system mounted with `nosymfollow`"
                     );
                 }
                 if follows >= SYMLINKS_MAX {
-                    return_errno_with_message!(Errno::ELOOP, "there are too many symlinks");
+                    return_errno!(Errno::ELOOP, "there are too many symlinks");
                 }
                 let read_link_res = next_path.inode().read_link()?;
                 match read_link_res {
                     SymbolicLink::Plain(mut tmp_link_path) => {
                         let link_path_remain = {
                             if tmp_link_path.is_empty() {
-                                return_errno_with_message!(
-                                    Errno::ENOENT,
-                                    "the symlink path is empty"
-                                );
+                                return_errno!(Errno::ENOENT, "the symlink path is empty");
                             }
                             if !next_is_tail {
                                 tmp_link_path += "/";
@@ -827,7 +821,7 @@ impl PathResolver {
             } else {
                 // If path ends with `/`, the inode must be a directory
                 if target_is_dir && next_type != InodeType::Dir {
-                    return_errno_with_message!(Errno::ENOTDIR, "the inode is not a directory");
+                    return_errno!(Errno::ENOTDIR, "the inode is not a directory");
                 }
                 current_path = next_path;
                 relative_path = path_remain;
@@ -863,7 +857,7 @@ impl LookupResult {
     /// will be returned.
     pub(crate) fn into_parent_and_filename(self) -> Result<(Path, String)> {
         let LookupResult::AtParent(res) = self else {
-            return_errno_with_message!(Errno::EEXIST, "the path already exists");
+            return_errno!(Errno::EEXIST, "the path already exists");
         };
         res.into_parent_and_filename()
     }
@@ -873,7 +867,7 @@ impl LookupResult {
     /// If the path was resolved, an error will be returned.
     pub(crate) fn into_parent_and_basename(self) -> Result<(Path, String)> {
         let LookupResult::AtParent(res) = self else {
-            return_errno_with_message!(Errno::EEXIST, "the path already exists");
+            return_errno!(Errno::EEXIST, "the path already exists");
         };
         Ok(res.into_parent_and_basename())
     }
@@ -909,7 +903,7 @@ impl LookupParentResult {
     /// If the unresolved name was expected to be a directory, an error will be returned.
     pub(crate) fn into_parent_and_filename(self) -> Result<(Path, String)> {
         if self.target_is_dir {
-            return_errno_with_message!(Errno::ENOENT, "the path is a directory");
+            return_errno!(Errno::ENOENT, "the path is a directory");
         }
         Ok((self.parent, self.unresolved_name))
     }
@@ -982,13 +976,13 @@ impl<'a> FsPath<'a> {
                 EmptyPathStr::Allow => dirfd != AT_FDCWD,
             };
             if !allowed {
-                return_errno_with_message!(Errno::ENOENT, "the path is empty");
+                return_errno!(Errno::ENOENT, "the path is empty");
             }
             return Self::from_fd(dirfd);
         }
 
         if path.len() > PATH_MAX {
-            return_errno_with_message!(Errno::ENAMETOOLONG, "the path is too long");
+            return_errno!(Errno::ENAMETOOLONG, "the path is too long");
         }
 
         let fs_path_inner = if path.starts_with('/') {

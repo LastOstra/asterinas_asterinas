@@ -142,7 +142,7 @@ impl BlockAsPageCacheBackend for InodeBlockManager {
         io_batch: &mut IoBatch,
     ) -> Result<()> {
         if idx >= self.npages.load(Ordering::Acquire) {
-            return_errno_with_message!(Errno::EINVAL, "invalid read size");
+            return_errno!(Errno::EINVAL, "invalid read size");
         }
         let iblock = idx as Iblock;
         match self.lookup_block(iblock)? {
@@ -162,7 +162,7 @@ impl BlockAsPageCacheBackend for InodeBlockManager {
         let start_idx = pages.start_idx();
         let end_idx = start_idx + pages.len();
         if end_idx > self.npages.load(Ordering::Acquire) {
-            return_errno_with_message!(Errno::EINVAL, "invalid read size");
+            return_errno!(Errno::EINVAL, "invalid read size");
         }
 
         let iblock_range = start_idx as Iblock..end_idx as Iblock;
@@ -201,7 +201,7 @@ impl BlockAsPageCacheBackend for InodeBlockManager {
         io_batch: &mut IoBatch,
     ) -> Result<()> {
         if idx >= self.npages.load(Ordering::Acquire) {
-            return_errno_with_message!(Errno::EINVAL, "invalid write size");
+            return_errno!(Errno::EINVAL, "invalid write size");
         }
         let iblock = idx as Iblock;
         let fs = self.fs()?;
@@ -231,7 +231,7 @@ impl BlockAsPageCacheBackend for InodeBlockManager {
         let start_idx = pages.start_idx();
         let end_idx = start_idx + pages.len();
         if end_idx > self.npages.load(Ordering::Acquire) {
-            return_errno_with_message!(Errno::EINVAL, "invalid write size");
+            return_errno!(Errno::EINVAL, "invalid write size");
         }
         self.allocate_range_blocks(start_idx, end_idx)?;
         let iblock_range = start_idx as Iblock..end_idx as Iblock;
@@ -250,10 +250,7 @@ impl BlockAsPageCacheBackend for InodeBlockManager {
                     )?;
                 }
                 IoRange::Hole(_) => {
-                    return_errno_with_message!(
-                        Errno::EIO,
-                        "unexpected hole after writeback allocation"
-                    );
+                    return_errno!(Errno::EIO, "unexpected hole after writeback allocation");
                 }
             }
         }

@@ -165,7 +165,7 @@ impl FileOps for TdxGuestFile {
         _writer: &mut VmWriter,
         _status_flags: StatusFlags,
     ) -> Result<usize> {
-        return_errno_with_message!(Errno::EINVAL, "the file is not valid for reading")
+        return_errno!(Errno::EINVAL, "the file is not valid for reading")
     }
 
     fn write_at(
@@ -174,13 +174,13 @@ impl FileOps for TdxGuestFile {
         _reader: &mut VmReader,
         _status_flags: StatusFlags,
     ) -> Result<usize> {
-        return_errno_with_message!(Errno::EINVAL, "the file not valid for writing")
+        return_errno!(Errno::EINVAL, "the file not valid for writing")
     }
 }
 
 impl PerOpenFileOps for TdxGuestFile {
     fn check_seekable(&self) -> Result<()> {
-        return_errno_with_message!(Errno::ESPIPE, "seek is not supported")
+        return_errno!(Errno::ESPIPE, "seek is not supported")
     }
 
     fn is_offset_aware(&self) -> bool {
@@ -206,7 +206,7 @@ impl PerOpenFileOps for TdxGuestFile {
                     Ok(0)
                 })
             }
-            _ => return_errno_with_message!(Errno::ENOTTY, "the ioctl command is unknown"),
+            _ => return_errno!(Errno::ENOTTY, "the ioctl command is unknown"),
         })
     }
 }
@@ -387,7 +387,7 @@ fn refresh_tdx_report_locked(
 ) -> Result<()> {
     if let Some(inblob) = inblob {
         if inblob.len() != size_of::<ReportData>() {
-            return_errno_with_message!(Errno::EINVAL, "Invalid inblob length");
+            return_errno!(Errno::EINVAL, "Invalid inblob length");
         }
 
         // Use `inblob` as the data associated with the report.

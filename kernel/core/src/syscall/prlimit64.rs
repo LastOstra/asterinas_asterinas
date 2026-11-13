@@ -89,7 +89,7 @@ fn do_prlimit64(
 
     let old_raw = if let Some(new_raw) = new_raw {
         if resource == ResourceType::RLIMIT_NOFILE && new_raw.max > SYSCTL_NR_OPEN {
-            return_errno_with_message!(Errno::EPERM, "the new limit exceeds the system limit");
+            return_errno!(Errno::EPERM, "the new limit exceeds the system limit");
         }
         rlimit.set_raw_rlimit(new_raw, ctx)?
     } else {
@@ -134,7 +134,7 @@ fn check_rlimit_perm(target_process: &Process, ctx: &Context) -> Result<()> {
         return Ok(());
     }
 
-    return_errno_with_message!(
+    return_errno!(
         Errno::EPERM,
         "accessing the resource limits of the target process is not allowed"
     )

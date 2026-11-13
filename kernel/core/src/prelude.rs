@@ -34,7 +34,7 @@ pub(crate) use crate::{
 };
 pub use crate::{
     error::{Errno, Error},
-    return_errno, return_errno_with_message,
+    return_errno,
 };
 
 pub type Result<T, E = Error> = core::result::Result<T, E>;

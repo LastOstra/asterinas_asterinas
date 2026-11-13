@@ -53,10 +53,7 @@ impl ControlMessage {
         while reader.has_remain() && msgs.len() < MAX_NR_MSGS {
             let header = reader.read_val::<CControlHeader>()?;
             if header.len < size_of::<CControlHeader>() || header.payload_len() > reader.remain() {
-                return_errno_with_message!(
-                    Errno::EINVAL,
-                    "the size of the control message is invalid"
-                );
+                return_errno!(Errno::EINVAL, "the size of the control message is invalid");
             }
 
             if let Some(msg) = Self::read_from(&header, reader)? {
@@ -69,7 +66,7 @@ impl ControlMessage {
 
         if reader.has_remain() {
             warn!("excessive control messages are currently not permitted");
-            return_errno_with_message!(
+            return_errno!(
                 Errno::E2BIG,
                 "excessive control messages are currently not permitted"
             );

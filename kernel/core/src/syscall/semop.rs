@@ -57,14 +57,14 @@ fn do_sys_semtimedop(
     );
 
     let Ok(semid) = IpcId::try_from(semid.cast_unsigned()) else {
-        return_errno_with_message!(Errno::EINVAL, "non-positive semaphore IDs are invalid");
+        return_errno!(Errno::EINVAL, "non-positive semaphore IDs are invalid");
     };
 
     if nsops == 0 {
-        return_errno_with_message!(Errno::EINVAL, "the number of operations is zero");
+        return_errno!(Errno::EINVAL, "the number of operations is zero");
     }
     if nsops > SEMOPM {
-        return_errno_with_message!(Errno::E2BIG, "the number of operations exceeds SEMOPM");
+        return_errno!(Errno::E2BIG, "the number of operations exceeds SEMOPM");
     }
 
     let user_space = ctx.user_space();

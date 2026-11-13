@@ -33,17 +33,17 @@ fn do_sys_mremap(
     );
 
     if !old_addr.is_multiple_of(PAGE_SIZE) {
-        return_errno_with_message!(Errno::EINVAL, "old_addr must be page-aligned");
+        return_errno!(Errno::EINVAL, "old_addr must be page-aligned");
     }
     if new_size == 0 {
-        return_errno_with_message!(Errno::EINVAL, "new_size cannot be zero");
+        return_errno!(Errno::EINVAL, "new_size cannot be zero");
     }
     if old_size == 0 {
-        return_errno_with_message!(Errno::EINVAL, "copying shareable mapping is not supported");
+        return_errno!(Errno::EINVAL, "copying shareable mapping is not supported");
     }
 
     if old_size.checked_add(PAGE_SIZE).is_none() || new_size.checked_add(PAGE_SIZE).is_none() {
-        return_errno_with_message!(Errno::EINVAL, "the size overflows")
+        return_errno!(Errno::EINVAL, "the size overflows")
     }
 
     // `MREMAP_DONTUNMAP` keeps the old VMA in the tree as an anonymous
@@ -52,13 +52,13 @@ fn do_sys_mremap(
     // stay at its current address (the physical pages must be relocated).
     if flags.contains(MremapFlags::MREMAP_DONTUNMAP) {
         if !flags.contains(MremapFlags::MREMAP_MAYMOVE) {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "MREMAP_DONTUNMAP must be combined with MREMAP_MAYMOVE"
             );
         }
         if new_size != old_size {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "MREMAP_DONTUNMAP requires new_size to equal old_size"
             );
@@ -98,7 +98,7 @@ fn do_sys_mremap(
         }
     } else {
         if flags.contains(MremapFlags::MREMAP_FIXED) {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "MREMAP_FIXED specified without also specifying MREMAP_MAYMOVE"
             );

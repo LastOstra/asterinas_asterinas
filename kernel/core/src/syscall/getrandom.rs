@@ -17,7 +17,7 @@ pub(super) fn sys_getrandom(
     );
 
     if flags.contains(GetRandomFlags::GRND_INSECURE | GetRandomFlags::GRND_RANDOM) {
-        return_errno_with_message!(
+        return_errno!(
             Errno::EINVAL,
             "requesting insecure and blocking randomness makes no sense"
         );

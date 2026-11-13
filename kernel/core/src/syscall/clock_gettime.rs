@@ -78,7 +78,7 @@ impl TryFrom<clockid_t> for DynamicClockIdInfo {
         const INVALID_MASK: i32 = CPU_CLOCK_TYPE_MASK | ID_TYPE_MASK;
 
         if (value & INVALID_MASK) == INVALID_MASK {
-            return_errno_with_message!(Errno::EINVAL, "invalid clock ID");
+            return_errno!(Errno::EINVAL, "invalid clock ID");
         }
 
         let id = !(value >> 3);

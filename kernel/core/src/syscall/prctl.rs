@@ -40,7 +40,7 @@ pub(super) fn sys_prctl(
         }
         PrctlCmd::PR_SET_DUMPABLE(dumpable) => {
             if dumpable != Dumpable::Disable && dumpable != Dumpable::User {
-                return_errno_with_message!(Errno::EINVAL, "invalid dumpable attribute");
+                return_errno!(Errno::EINVAL, "invalid dumpable attribute");
             }
             // TODO: Implement coredump.
         }
@@ -57,7 +57,7 @@ pub(super) fn sys_prctl(
         }
         PrctlCmd::PR_SET_KEEPCAPS(keep_cap) => {
             if keep_cap > 1 {
-                return_errno_with_message!(Errno::EINVAL, "invalid keep-capabilities flag");
+                return_errno!(Errno::EINVAL, "invalid keep-capabilities flag");
             }
             let credentials = ctx.credentials_mut();
             credentials.set_keep_capabilities(keep_cap != 0)?;
@@ -94,7 +94,7 @@ pub(super) fn sys_prctl(
         PrctlCmd::PR_SET_TIMERSLACK(slack_ns) => {
             // Negative values are invalid.
             if (slack_ns as i64) < 0 {
-                return_errno_with_message!(Errno::EINVAL, "invalid timer slack");
+                return_errno!(Errno::EINVAL, "invalid timer slack");
             }
             // In Linux, a value of 0 means "use default slack".
             if slack_ns == 0 {
@@ -243,19 +243,13 @@ impl PrctlCmd {
             PR_GET_CHILD_SUBREAPER => Ok(PrctlCmd::PR_GET_CHILD_SUBREAPER(arg2 as _)),
             PR_SET_NO_NEW_PRIVS => {
                 if arg2 != 1 || arg3 != 0 || arg4 != 0 || arg5 != 0 {
-                    return_errno_with_message!(
-                        Errno::EINVAL,
-                        "invalid PR_SET_NO_NEW_PRIVS arguments"
-                    );
+                    return_errno!(Errno::EINVAL, "invalid PR_SET_NO_NEW_PRIVS arguments");
                 }
                 Ok(PrctlCmd::PR_SET_NO_NEW_PRIVS)
             }
             PR_GET_NO_NEW_PRIVS => {
                 if arg2 != 0 || arg3 != 0 || arg4 != 0 || arg5 != 0 {
-                    return_errno_with_message!(
-                        Errno::EINVAL,
-                        "invalid PR_GET_NO_NEW_PRIVS arguments"
-                    );
+                    return_errno!(Errno::EINVAL, "invalid PR_GET_NO_NEW_PRIVS arguments");
                 }
                 Ok(PrctlCmd::PR_GET_NO_NEW_PRIVS)
             }
@@ -264,7 +258,7 @@ impl PrctlCmd {
             )?)),
             _ => {
                 debug!("prctl cmd number: {}", option);
-                return_errno_with_message!(Errno::EINVAL, "unsupported prctl command");
+                return_errno!(Errno::EINVAL, "unsupported prctl command");
             }
         }
     }
@@ -279,7 +273,7 @@ impl CapAmbientCmd {
 
     fn from_args(operation: u64, capability: u64, arg4: u64, arg5: u64) -> Result<Self> {
         if arg4 != 0 || arg5 != 0 {
-            return_errno_with_message!(Errno::EINVAL, "unused PR_CAP_AMBIENT arguments are not 0");
+            return_errno!(Errno::EINVAL, "unused PR_CAP_AMBIENT arguments are not 0");
         }
 
         match operation {
@@ -288,14 +282,14 @@ impl CapAmbientCmd {
             Self::PR_CAP_AMBIENT_LOWER => Ok(Self::Lower(parse_capability(capability)?)),
             Self::PR_CAP_AMBIENT_CLEAR_ALL => {
                 if capability != 0 {
-                    return_errno_with_message!(
+                    return_errno!(
                         Errno::EINVAL,
                         "PR_CAP_AMBIENT_CLEAR_ALL requires all arguments to be 0"
                     );
                 }
                 Ok(Self::ClearAll)
             }
-            _ => return_errno_with_message!(Errno::EINVAL, "invalid PR_CAP_AMBIENT operation"),
+            _ => return_errno!(Errno::EINVAL, "invalid PR_CAP_AMBIENT operation"),
         }
     }
 }

@@ -98,7 +98,7 @@ impl TimerfdFile {
             ClockId::CLOCK_REALTIME | ClockId::CLOCK_MONOTONIC | ClockId::CLOCK_BOOTTIME
         );
         if !is_valid {
-            return_errno_with_message!(Errno::EINVAL, "invalid clock ID");
+            return_errno!(Errno::EINVAL, "invalid clock ID");
         }
 
         let ticks = Arc::new(AtomicU64::new(0));
@@ -190,7 +190,7 @@ impl TimerfdFile {
         self.pollee.invalidate();
 
         if ticks == 0 {
-            return_errno_with_message!(Errno::EAGAIN, "the counter is zero");
+            return_errno!(Errno::EAGAIN, "the counter is zero");
         }
 
         writer.write_fallible(&mut ticks.as_bytes().into())?;
@@ -221,7 +221,7 @@ impl FileLike for TimerfdFile {
         let read_len = size_of::<u64>();
 
         if writer.avail() < read_len {
-            return_errno_with_message!(Errno::EINVAL, "the timer buffer is too small");
+            return_errno!(Errno::EINVAL, "the timer buffer is too small");
         }
 
         if self.is_nonblocking() {

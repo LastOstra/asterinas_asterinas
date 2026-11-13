@@ -112,7 +112,7 @@ fn getxattr(
             return Ok(converted_len);
         }
         if value_len < converted_len {
-            return_errno_with_message!(Errno::ERANGE, "the xattr value buffer is too small");
+            return_errno!(Errno::ERANGE, "the xattr value buffer is too small");
         }
 
         let mut value_writer = user_space.writer(value_ptr, converted_len)?;
@@ -136,13 +136,13 @@ fn convert_file_cap(raw_value: &mut [u8]) -> Result<usize> {
 
     match revision {
         VfsCapRevision::V1 => {
-            return_errno_with_message!(Errno::EINVAL, "v1 file capabilities cannot be read")
+            return_errno!(Errno::EINVAL, "v1 file capabilities cannot be read")
         }
         VfsCapRevision::V2 => Ok(raw_value.len()),
         VfsCapRevision::V3 => {
             let root_uid = FileCapabilities::read_v3_uid(raw_value)?;
             if root_uid == Uid::INVALID {
-                return_errno_with_message!(
+                return_errno!(
                     Errno::EOVERFLOW,
                     "v3 file capabilities contain an invalid root UID"
                 );

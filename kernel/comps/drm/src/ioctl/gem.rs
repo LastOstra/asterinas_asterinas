@@ -17,7 +17,7 @@ impl DrmFile {
         let mut args = cmd.read()?;
 
         if args.width == 0 || args.height == 0 || args.bpp == 0 {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "the dumb-buffer dimensions and bits per pixel must be nonzero"
             );
@@ -25,7 +25,7 @@ impl DrmFile {
 
         let bits_per_row = u64::from(args.width) * u64::from(args.bpp);
         let Ok(pitch) = u32::try_from(bits_per_row.div_ceil(8)) else {
-            return_errno_with_message!(Errno::EINVAL, "the dumb-buffer pitch overflows u32");
+            return_errno!(Errno::EINVAL, "the dumb-buffer pitch overflows u32");
         };
 
         // Linux rejects dumb buffers whose page-aligned size does not fit in `u32`,
@@ -34,7 +34,7 @@ impl DrmFile {
             .checked_mul(args.height)
             .and_then(|size| size.checked_next_multiple_of(PAGE_SIZE as u32))
         else {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "the page-aligned dumb-buffer size overflows u32"
             );

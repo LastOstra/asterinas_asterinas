@@ -106,7 +106,7 @@ impl<T: DirentSerializer> DirentVisitor for DirentBufferReader<'_, T> {
         let dirent_serializer = T::new(ino, offset as u64, type_, CString::new(name)?);
         let len = dirent_serializer.len();
         if self.writer.avail() < len {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EINVAL,
                 "the buffer is too small for the directory entry"
             );

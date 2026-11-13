@@ -26,7 +26,7 @@ pub(super) fn sys_capset(
     if cap_user_header.version != LINUX_CAPABILITY_VERSION_3 {
         // Write the supported version back to userspace.
         user_space.write_val(cap_user_header_addr, &LINUX_CAPABILITY_VERSION_3)?;
-        return_errno_with_message!(
+        return_errno!(
             Errno::EINVAL,
             "capability versions other than v3 are not supported"
         );
@@ -37,7 +37,7 @@ pub(super) fn sys_capset(
     // <https://man7.org/linux/man-pages/man2/capset.2.html>.
     let header_pid = cap_user_header.pid;
     if header_pid != 0 && header_pid != ctx.posix_thread.tid() {
-        return_errno_with_message!(
+        return_errno!(
             Errno::EPERM,
             "setting other threads' capabilities is not allowed"
         );
@@ -55,10 +55,10 @@ pub(super) fn sys_capset(
     let credentials = ctx.credentials_mut();
 
     if !credentials.permitted_capset().contains(permitted_capset) {
-        return_errno_with_message!(Errno::EPERM, "adding permitted capabilities is not allowed");
+        return_errno!(Errno::EPERM, "adding permitted capabilities is not allowed");
     }
     if !permitted_capset.contains(effective_capset) {
-        return_errno_with_message!(Errno::EPERM, "effective capabilities are not permitted");
+        return_errno!(Errno::EPERM, "effective capabilities are not permitted");
     }
     if !(credentials.inheritable_capset() | credentials.permitted_capset())
         .contains(inheritable_capset)
@@ -73,7 +73,7 @@ pub(super) fn sys_capset(
     if !(credentials.inheritable_capset() | credentials.bounding_capset())
         .contains(inheritable_capset)
     {
-        return_errno_with_message!(Errno::EPERM, "inheritable capabilities are not bounding");
+        return_errno!(Errno::EPERM, "inheritable capabilities are not bounding");
     }
 
     credentials.set_permitted_capset(permitted_capset);

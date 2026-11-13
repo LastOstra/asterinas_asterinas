@@ -27,7 +27,7 @@ pub(super) fn sys_wait4(
     if wait_options.intersects(WaitOptions::WSTOPPED | WaitOptions::WCONTINUED)
         && wait_options.contains(WaitOptions::WNOWAIT)
     {
-        return_errno_with_message!(
+        return_errno!(
             Errno::EINVAL,
             "WNOWAIT cannot be used toghther with WSTOPPED or WCONTINUED"
         );

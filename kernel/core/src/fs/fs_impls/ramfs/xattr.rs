@@ -55,7 +55,7 @@ impl RamXattr {
         match xattr.map.entry(RamXattrName::from(name)) {
             Entry::Occupied(mut entry) => {
                 if flags.contains(XattrSetFlags::CREATE_ONLY) {
-                    return_errno_with_message!(Errno::EEXIST, "the target xattr already exists");
+                    return_errno!(Errno::EEXIST, "the target xattr already exists");
                 }
 
                 let value = {
@@ -67,7 +67,7 @@ impl RamXattr {
             }
             Entry::Vacant(entry) => {
                 if flags.contains(XattrSetFlags::REPLACE_ONLY) {
-                    return_errno_with_message!(Errno::ENODATA, "the target xattr does not exist");
+                    return_errno!(Errno::ENODATA, "the target xattr does not exist");
                 }
 
                 let value = {
@@ -107,7 +107,7 @@ impl RamXattr {
             return Ok(value_len);
         }
         if value_len > value_avail_len {
-            return_errno_with_message!(Errno::ERANGE, "the xattr value buffer is too small");
+            return_errno!(Errno::ERANGE, "the xattr value buffer is too small");
         }
 
         value_writer.write_fallible(&mut VmReader::from(value.as_slice()))?;
@@ -135,7 +135,7 @@ impl RamXattr {
             return Ok(list_actual_len);
         }
         if list_actual_len > list_avail_len {
-            return_errno_with_message!(Errno::ERANGE, "the xattr list buffer is too small");
+            return_errno!(Errno::ERANGE, "the xattr list buffer is too small");
         }
 
         for (name, _) in &xattr.map {

@@ -439,10 +439,6 @@ macro_rules! return_errno {
     ($errno: expr) => {
         return Err($crate::error::Error::new($errno))
     };
-}
-
-#[macro_export]
-macro_rules! return_errno_with_message {
     ($errno: expr, $message: expr) => {
         return Err($crate::error::Error::with_message($errno, $message))
     };
@@ -477,7 +473,7 @@ mod tests {
 
         let line = line!() + 2;
         fn fail_with_message() -> Result<(), Error> {
-            return_errno_with_message!(Errno::EINVAL, "invalid argument")
+            return_errno!(Errno::EINVAL, "invalid argument")
         }
         assert_eq!(fail_with_message().unwrap_err().location().line(), line);
     }

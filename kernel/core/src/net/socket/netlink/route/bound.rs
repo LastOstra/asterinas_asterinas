@@ -53,7 +53,7 @@ impl datagram_common::Bound for BoundNetlinkRoute {
 
         // TODO: Further check whether other socket address can be supported.
         if *remote != NetlinkSocketAddr::new_unspecified() {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::ECONNREFUSED,
                 "sending netlink route messages to user space is not supported"
             );

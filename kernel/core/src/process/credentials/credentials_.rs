@@ -227,7 +227,7 @@ impl Credentials_ {
             && *ruid != self.euid()
             && (!ruid_may_be_old_suid || *ruid != self.suid())
         {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EPERM,
                 "the new real UID is not one of the associated UIDs"
             );
@@ -238,7 +238,7 @@ impl Credentials_ {
             && *euid != self.euid()
             && *euid != self.suid()
         {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EPERM,
                 "the new effective UID is not one of the associated UIDs"
             )
@@ -249,7 +249,7 @@ impl Credentials_ {
             && *suid != self.euid()
             && *suid != self.suid()
         {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EPERM,
                 "the new saved-set UID is not one of the associated UIDs"
             )
@@ -442,7 +442,7 @@ impl Credentials_ {
             && *rgid != self.egid()
             && (!rgid_may_be_old_sgid || *rgid != self.sgid())
         {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EPERM,
                 "the new real GID is not one of the associated GIDs"
             );
@@ -453,7 +453,7 @@ impl Credentials_ {
             && *egid != self.egid()
             && *egid != self.sgid()
         {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EPERM,
                 "the new effective GID is not one of the associated GIDs"
             )
@@ -464,7 +464,7 @@ impl Credentials_ {
             && *sgid != self.egid()
             && *sgid != self.sgid()
         {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EPERM,
                 "the new saved-set GID is not one of the associated GIDs"
             )
@@ -548,7 +548,7 @@ impl Credentials_ {
 
     pub(super) fn raise_ambient_capability(&self, capability: CapSet) -> Result<()> {
         if self.securebits().no_cap_ambient_raise() {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EPERM,
                 "raising ambient capabilities is forbidden by secure bits"
             );
@@ -557,7 +557,7 @@ impl Credentials_ {
         if !self.permitted_capset().contains(capability)
             || !self.inheritable_capset().contains(capability)
         {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EPERM,
                 "an ambient capability must be both permitted and inheritable"
             );
@@ -586,7 +586,7 @@ impl Credentials_ {
 
     pub(super) fn drop_bounding_capability(&self, capability: CapSet) -> Result<()> {
         if !self.effective_capset().contains(CapSet::SETPCAP) {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EPERM,
                 "only threads with CAP_SETPCAP can drop capabilities from the bounding set"
             );
@@ -620,7 +620,7 @@ impl Credentials_ {
 
     pub(super) fn set_securebits(&self, securebits: SecureBits) -> Result<()> {
         if !self.effective_capset().contains(CapSet::SETPCAP) {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EPERM,
                 "only threads with CAP_SETPCAP can change secure bits"
             );
@@ -746,7 +746,7 @@ impl Credentials_ {
             file_capabilities.has_effective_flag()
                 && !candidate_permitted.contains(file_capabilities.permitted())
         }) {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::EPERM,
                 "the executable requests file capabilities outside the computed permitted set"
             );

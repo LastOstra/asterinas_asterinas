@@ -311,7 +311,7 @@ impl Vmo {
     fn commit_on_anonymous(&self, page_idx: usize) -> Result<CachePage> {
         let mut locked_pages = self.pages.lock();
         if page_idx >= self.size().div_ceil(PAGE_SIZE) {
-            return_errno_with_message!(Errno::EINVAL, "the offset is outside the VMO");
+            return_errno!(Errno::EINVAL, "the offset is outside the VMO");
         }
 
         let mut cursor = locked_pages.cursor_mut(page_idx as u64);
@@ -648,7 +648,7 @@ impl Vmo {
             return Ok(());
         }
         if range.end > self.size() {
-            return_errno_with_message!(Errno::EINVAL, "the range to fill exceeds the VMO size");
+            return_errno!(Errno::EINVAL, "the range to fill exceeds the VMO size");
         }
 
         static ZERO_PAGE: [u8; PAGE_SIZE] = [0; PAGE_SIZE];
@@ -1043,7 +1043,7 @@ impl<'a> BackedVmo<'a> {
     fn commit_on_internal(&self, page_idx: usize, commit_mode: CommitMode) -> Result<CachePage> {
         let mut locked_pages = self.pages.lock();
         if page_idx >= self.size().div_ceil(PAGE_SIZE) {
-            return_errno_with_message!(Errno::EINVAL, "the offset is outside the VMO");
+            return_errno!(Errno::EINVAL, "the offset is outside the VMO");
         }
 
         let mut cursor = locked_pages.cursor_mut(page_idx as u64);

@@ -38,7 +38,7 @@ impl VmPerms {
         // NOTE: `MAY_READ >> 3 == READ`, and so for r/w/x bits.
         let allowed = VmPerms::from_bits_truncate((*self & Self::ALL_MAY_PERMS).bits() >> 3);
         if !allowed.contains(requested) {
-            return_errno_with_message!(Errno::EACCES, "permission denied");
+            return_errno!(Errno::EACCES, "permission denied");
         }
 
         Ok(())
@@ -52,7 +52,7 @@ impl VmPerms {
         {
             Ok(vm_perms)
         } else {
-            return_errno_with_message!(Errno::EINVAL, "invalid permissions");
+            return_errno!(Errno::EINVAL, "invalid permissions");
         }
     }
 

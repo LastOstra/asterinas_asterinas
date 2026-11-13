@@ -41,7 +41,7 @@ impl ProcFileOpsByHandle for MapsFileOps {
         _status_flags: StatusFlags,
     ) -> Result<Box<dyn PerOpenFileOps>> {
         let Some(process) = self.0.process() else {
-            return_errno_with_message!(Errno::ESRCH, "the process does not exist");
+            return_errno!(Errno::ESRCH, "the process does not exist");
         };
         // Hold the process VMAR lock while checking access permissions and
         // taking the VMAR identity snapshot to prevent race conditions.
@@ -82,7 +82,7 @@ impl FileOps for MapsFileHandle {
         let mut printer = VmPrinter::new_skip(writer, offset);
 
         let Some(process) = self.0.process() else {
-            return_errno_with_message!(Errno::ESRCH, "the process does not exist");
+            return_errno!(Errno::ESRCH, "the process does not exist");
         };
         let vmar_guard = process.lock_vmar();
         if !vmar_guard.is_same_as(&self.1) {
@@ -115,7 +115,7 @@ impl FileOps for MapsFileHandle {
         _reader: &mut VmReader,
         _status_flags: StatusFlags,
     ) -> Result<usize> {
-        return_errno_with_message!(Errno::EPERM, "`/proc/[pid]/maps` is not writable");
+        return_errno!(Errno::EPERM, "`/proc/[pid]/maps` is not writable");
     }
 }
 

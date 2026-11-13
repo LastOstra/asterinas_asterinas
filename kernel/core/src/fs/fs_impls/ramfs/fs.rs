@@ -723,7 +723,7 @@ impl RamInode {
 
     fn find(&self, name: &str) -> Result<Arc<Self>> {
         if self.typ != InodeType::Dir {
-            return_errno_with_message!(Errno::ENOTDIR, "self is not dir");
+            return_errno!(Errno::ENOTDIR, "self is not dir");
         }
 
         let (_, inode) = self
@@ -782,10 +782,10 @@ impl RamInode {
         F: FnOnce(&Self) -> bool,
     {
         if is_dot_or_dotdot(name) {
-            return_errno_with_message!(Errno::EISDIR, "unlink . or ..");
+            return_errno!(Errno::EISDIR, "unlink . or ..");
         }
         if self.typ != InodeType::Dir {
-            return_errno_with_message!(Errno::ENOTDIR, "self is not dir");
+            return_errno!(Errno::ENOTDIR, "self is not dir");
         }
 
         self.unlink_impl(name, predicate)
@@ -799,7 +799,7 @@ impl RamInode {
         let mut self_dir = self.inner.as_direntry().unwrap().write();
         let (idx, target) = self_dir.get_entry(name).ok_or(Error::new(Errno::ENOENT))?;
         if target.typ == InodeType::Dir {
-            return_errno_with_message!(Errno::EISDIR, "unlink on dir");
+            return_errno!(Errno::EISDIR, "unlink on dir");
         }
         if !predicate(&target) {
             return Ok(false);
@@ -833,13 +833,13 @@ impl RamInode {
         F: FnOnce(&Self) -> bool,
     {
         if is_dot(name) {
-            return_errno_with_message!(Errno::EINVAL, "rmdir on .");
+            return_errno!(Errno::EINVAL, "rmdir on .");
         }
         if is_dotdot(name) {
-            return_errno_with_message!(Errno::ENOTEMPTY, "rmdir on ..");
+            return_errno!(Errno::ENOTEMPTY, "rmdir on ..");
         }
         if self.typ != InodeType::Dir {
-            return_errno_with_message!(Errno::ENOTDIR, "self is not dir");
+            return_errno!(Errno::ENOTDIR, "self is not dir");
         }
 
         let target = self.find(name)?;
@@ -851,7 +851,7 @@ impl RamInode {
         F: FnOnce(&Self) -> bool,
     {
         if target.typ != InodeType::Dir {
-            return_errno_with_message!(Errno::ENOTDIR, "rmdir on not dir");
+            return_errno!(Errno::ENOTDIR, "rmdir on not dir");
         }
 
         // When we got the lock, the directory may have been modified by another thread.
@@ -860,7 +860,7 @@ impl RamInode {
             (target.ino, target.inner.as_direntry().unwrap()),
         );
         if !target_dir.is_empty_children() {
-            return_errno_with_message!(Errno::ENOTEMPTY, "dir not empty");
+            return_errno!(Errno::ENOTEMPTY, "dir not empty");
         }
         let Some((idx, current)) = self_dir.get_entry(name) else {
             return_errno!(Errno::ENOENT);
@@ -901,12 +901,12 @@ impl RamInode {
             return_errno!(Errno::ENAMETOOLONG);
         }
         if self.typ != InodeType::Dir {
-            return_errno_with_message!(Errno::ENOTDIR, "self is not dir");
+            return_errno!(Errno::ENOTDIR, "self is not dir");
         }
 
         let self_dir = self.inner.as_direntry().unwrap().upread();
         if self_dir.contains_entry(name) {
-            return_errno_with_message!(Errno::EEXIST, "entry exists");
+            return_errno!(Errno::EEXIST, "entry exists");
         }
 
         let fs = self.fs.upgrade().unwrap();
@@ -953,12 +953,12 @@ impl RamInode {
             return_errno!(Errno::ENAMETOOLONG);
         }
         if self.typ != InodeType::Dir {
-            return_errno_with_message!(Errno::ENOTDIR, "self is not dir");
+            return_errno!(Errno::ENOTDIR, "self is not dir");
         }
 
         let self_dir = self.inner.as_direntry().unwrap().upread();
         if self_dir.contains_entry(name) {
-            return_errno_with_message!(Errno::EEXIST, "entry exists");
+            return_errno!(Errno::EEXIST, "entry exists");
         }
 
         let (uid, gid) = utils::current_fs_ids();
@@ -994,10 +994,10 @@ impl RamInode {
 
     fn resize_impl(&self, new_size: usize) -> Result<()> {
         if self.typ == InodeType::Dir {
-            return_errno_with_message!(Errno::EISDIR, "the inode is a directory");
+            return_errno!(Errno::EISDIR, "the inode is a directory");
         }
         if self.typ != InodeType::File {
-            return_errno_with_message!(Errno::EINVAL, "the inode is not a regular file");
+            return_errno!(Errno::EINVAL, "the inode is not a regular file");
         }
 
         let mut page_cache = self.inner.as_file().unwrap().lock();
@@ -1042,7 +1042,7 @@ impl FileOps for RamInode {
                 page_cache.lock().read(offset, writer)?;
                 read_len
             }
-            _ => return_errno_with_message!(Errno::EISDIR, "read is not supported"),
+            _ => return_errno!(Errno::EISDIR, "read is not supported"),
         };
 
         if self.typ == InodeType::File {
@@ -1089,14 +1089,14 @@ impl FileOps for RamInode {
 
                 write_len
             }
-            _ => return_errno_with_message!(Errno::EISDIR, "write is not supported"),
+            _ => return_errno!(Errno::EISDIR, "write is not supported"),
         };
         Ok(written_len)
     }
 
     fn readdir_at(&self, offset: usize, visitor: &mut dyn DirentVisitor) -> Result<usize> {
         if self.typ != InodeType::Dir {
-            return_errno_with_message!(Errno::ENOTDIR, "self is not dir");
+            return_errno!(Errno::ENOTDIR, "self is not dir");
         }
 
         let cnt = self
@@ -1244,7 +1244,7 @@ impl Inode for RamInode {
         hard_linkability: HardLinkability,
     ) -> Result<Arc<dyn Inode>> {
         if self.typ != InodeType::Dir {
-            return_errno_with_message!(Errno::ENOTDIR, "self is not dir");
+            return_errno!(Errno::ENOTDIR, "self is not dir");
         }
 
         let fs = self.fs.upgrade().unwrap();
@@ -1261,20 +1261,20 @@ impl Inode for RamInode {
 
     fn link(&self, _self_dentry: &Dentry, old_dentry: &Dentry, name: &str) -> Result<()> {
         if self.typ != InodeType::Dir {
-            return_errno_with_message!(Errno::ENOTDIR, "self is not dir");
+            return_errno!(Errno::ENOTDIR, "self is not dir");
         }
 
         let old = old_dentry.inode().downcast_ref::<RamInode>().unwrap();
         if old.typ == InodeType::Dir {
-            return_errno_with_message!(Errno::EPERM, "old is a dir");
+            return_errno!(Errno::EPERM, "old is a dir");
         }
         if old.hard_linkability == HardLinkability::Unlinkable {
-            return_errno_with_message!(Errno::ENOENT, "tmpfile is not linkable");
+            return_errno!(Errno::ENOENT, "tmpfile is not linkable");
         }
 
         let mut self_dir = self.inner.as_direntry().unwrap().write();
         if self_dir.contains_entry(name) {
-            return_errno_with_message!(Errno::EEXIST, "entry exist");
+            return_errno!(Errno::EEXIST, "entry exist");
         }
         self_dir.append_entry(name, old.this.upgrade().unwrap());
         let now = now();
@@ -1341,14 +1341,14 @@ impl Inode for RamInode {
                             .read()
                             .is_empty_children() =>
                     {
-                        return_errno_with_message!(Errno::ENOTEMPTY, "dir not empty");
+                        return_errno!(Errno::ENOTEMPTY, "dir not empty");
                     }
                     (InodeType::Dir, InodeType::Dir) => {}
                     (InodeType::Dir, _) => {
-                        return_errno_with_message!(Errno::ENOTDIR, "old is not dir");
+                        return_errno!(Errno::ENOTDIR, "old is not dir");
                     }
                     (_, InodeType::Dir) => {
-                        return_errno_with_message!(Errno::EISDIR, "new is dir");
+                        return_errno!(Errno::EISDIR, "new is dir");
                     }
                     _ => {}
                 }
@@ -1465,7 +1465,7 @@ impl Inode for RamInode {
 
     fn read_link(&self) -> Result<SymbolicLink> {
         if self.typ != InodeType::SymLink {
-            return_errno_with_message!(Errno::EINVAL, "self is not symlink");
+            return_errno!(Errno::EINVAL, "self is not symlink");
         }
 
         let link = self.inner.as_symlink().unwrap().lock();
@@ -1539,7 +1539,7 @@ impl Inode for RamInode {
                 self.inner.as_file().unwrap().lock().fill_zeros(range)
             }
             _ => {
-                return_errno_with_message!(
+                return_errno!(
                     Errno::EOPNOTSUPP,
                     "fallocate with the specified flags is not supported"
                 );

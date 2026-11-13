@@ -126,7 +126,7 @@ impl Ext2 {
         };
         let block_size = super_block.block_size();
         if block_size != BLOCK_SIZE {
-            return_errno_with_message!(Errno::EINVAL, "currently only 4096-byte block size");
+            return_errno!(Errno::EINVAL, "currently only 4096-byte block size");
         }
 
         let mount_options = Ext2MountOptions::parse(data);
@@ -247,7 +247,7 @@ impl Ext2 {
     /// Reads an inode via per-block-group inode cache.
     pub(super) fn read_inode(&self, ino: Ext2Ino) -> Result<Arc<Inode>> {
         if ino == 0 {
-            return_errno_with_message!(Errno::ENOENT, "inode 0 is not valid in ext2");
+            return_errno!(Errno::ENOENT, "inode 0 is not valid in ext2");
         }
         let group = self
             .find_group(ino)
@@ -281,7 +281,7 @@ impl Ext2 {
             let sb = self.super_block.read();
             // Apply ext2 inode-number validity rules before indexing groups.
             if (ino != ROOT_INO && ino < sb.first_ino()) || ino > sb.total_inodes() {
-                return_errno_with_message!(Errno::EINVAL, "inode number out of valid range");
+                return_errno!(Errno::EINVAL, "inode number out of valid range");
             }
         }
 
@@ -295,7 +295,7 @@ impl Ext2 {
     /// Allocates up to `count` contiguous blocks.
     pub(super) fn alloc_blocks(&self, count: u32, goal: Ext2Bid) -> Result<Range<Ext2Bid>> {
         if count == 0 {
-            return_errno_with_message!(Errno::EINVAL, "zero block allocation requested");
+            return_errno!(Errno::EINVAL, "zero block allocation requested");
         }
 
         let mut sb = self.super_block.write();
@@ -304,7 +304,7 @@ impl Ext2 {
         let first_data_block = sb.first_data_block();
         let nr_blocks_per_group = sb.nr_blocks_per_group();
         if sb.free_blocks_count() == 0 {
-            return_errno_with_message!(Errno::ENOSPC, "no free blocks on device");
+            return_errno!(Errno::ENOSPC, "no free blocks on device");
         }
 
         if !Self::can_alloc(
@@ -313,7 +313,7 @@ impl Ext2 {
             sb.default_reserved_uid(),
             sb.default_reserved_gid(),
         ) {
-            return_errno_with_message!(
+            return_errno!(
                 Errno::ENOSPC,
                 "no free blocks available for unprivileged user"
             );
@@ -338,7 +338,7 @@ impl Ext2 {
             }
         }
 
-        return_errno_with_message!(Errno::ENOSPC, "no free blocks available in any group");
+        return_errno!(Errno::ENOSPC, "no free blocks available in any group");
     }
 
     /// Frees a range of blocks starting at `start`.
@@ -349,7 +349,7 @@ impl Ext2 {
 
         let mut sb = self.super_block.write();
         if !sb.is_data_block_valid(start, count) {
-            return_errno_with_message!(Errno::EIO, "freeing invalid data block range");
+            return_errno!(Errno::EIO, "freeing invalid data block range");
         }
         let nr_blocks_per_group = sb.nr_blocks_per_group();
         let first_data_block = sb.first_data_block();
@@ -386,7 +386,7 @@ impl Ext2 {
         perm: FilePerm,
     ) -> Result<Arc<Inode>> {
         if inode_type == InodeType::Unknown {
-            return_errno_with_message!(Errno::EINVAL, "cannot create inode with unknown type");
+            return_errno!(Errno::EINVAL, "cannot create inode with unknown type");
         }
 
         let ino = self.alloc_ino(parent_ino, inode_type)?;
@@ -439,7 +439,7 @@ impl Ext2 {
         let total_inodes = sb.total_inodes();
         let first_ino = sb.first_ino();
         if ino < first_ino || ino > total_inodes {
-            return_errno_with_message!(Errno::EIO, "inode number out of valid range for free");
+            return_errno!(Errno::EIO, "inode number out of valid range for free");
         }
 
         let group = self
@@ -479,7 +479,7 @@ impl Ext2 {
         match bio_status {
             BioStatus::Complete => Ok(()),
             _ => {
-                return_errno_with_message!(Errno::EIO, "failed to read blocks from block device")
+                return_errno!(Errno::EIO, "failed to read blocks from block device")
             }
         }
     }
@@ -509,7 +509,7 @@ impl Ext2 {
         match bio_status {
             BioStatus::Complete => Ok(()),
             _ => {
-                return_errno_with_message!(Errno::EIO, "failed to write blocks to block device")
+                return_errno!(Errno::EIO, "failed to write blocks to block device")
             }
         }
     }
@@ -534,10 +534,10 @@ impl Ext2 {
         let nr_inodes_per_group = sb.nr_inodes_per_group();
         let total_inodes = sb.total_inodes();
         if parent_ino < ROOT_INO || parent_ino > total_inodes {
-            return_errno_with_message!(Errno::EIO, "parent inode number out of range");
+            return_errno!(Errno::EIO, "parent inode number out of range");
         }
         if sb.free_inodes_count() == 0 {
-            return_errno_with_message!(Errno::ENOSPC, "no free inodes on device");
+            return_errno!(Errno::ENOSPC, "no free inodes on device");
         }
 
         let parent_group_idx = ((parent_ino - 1) / nr_inodes_per_group) as usize;
@@ -550,14 +550,14 @@ impl Ext2 {
 
             let ino = (group_idx as u32) * nr_inodes_per_group + inode_idx + 1;
             if ino < sb.first_ino() || ino > total_inodes {
-                return_errno_with_message!(Errno::EIO, "allocated inode number out of valid range");
+                return_errno!(Errno::EIO, "allocated inode number out of valid range");
             }
             sb.dec_free_inodes()?;
 
             return Ok(ino);
         }
 
-        return_errno_with_message!(Errno::ENOSPC, "no free inodes available in any group");
+        return_errno!(Errno::ENOSPC, "no free inodes available in any group");
     }
 
     /// Finds the block group that owns an inode number.
@@ -678,7 +678,7 @@ impl Ext2 {
             .write_bytes(sb_offset, raw_sb.as_bytes())
             .is_err()
         {
-            return_errno_with_message!(Errno::EIO, "failed to write superblock");
+            return_errno!(Errno::EIO, "failed to write superblock");
         }
         Ok(())
     }

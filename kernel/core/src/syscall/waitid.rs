@@ -34,7 +34,7 @@ pub(super) fn sys_waitid(
     if !wait_options
         .intersects(WaitOptions::WSTOPPED | WaitOptions::WCONTINUED | WaitOptions::WEXITED)
     {
-        return_errno_with_message!(
+        return_errno!(
             Errno::EINVAL,
             "at least one of WSTOPPED, WCONTINUED, or WEXITED should be specified"
         );

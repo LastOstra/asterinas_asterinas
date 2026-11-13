@@ -149,14 +149,14 @@ fn do_ptrace_attach(tracer_thread: &Arc<Thread>, tracee_thread: Arc<Thread>) -> 
     let tracer = tracer_thread.as_posix_thread().unwrap();
     let tracee = tracee_thread.as_posix_thread().unwrap();
     if !Arc::ptr_eq(&tracer.process().main_thread(), tracer_thread) {
-        return_errno_with_message!(
+        return_errno!(
             Errno::EOPNOTSUPP,
             "using a non-main thread as a tracer is not supported currently"
         );
     }
 
     if Weak::ptr_eq(tracer.weak_process(), tracee.weak_process()) {
-        return_errno_with_message!(
+        return_errno!(
             Errno::EPERM,
             "tracer and tracee must be in different processes"
         );

@@ -147,7 +147,7 @@ impl<T: NsCommonOps> Inode for NsInode<T> {
     }
 
     fn set_mode(&self, _self_dentry: &Dentry, _mode: InodeMode) -> Result<()> {
-        return_errno_with_message!(Errno::EPERM, "the mode of ns inodes cannot be changed");
+        return_errno!(Errno::EPERM, "the mode of ns inodes cannot be changed");
     }
 }
 
@@ -181,7 +181,7 @@ impl<T: NsCommonOps> NsFile<T> {
 
 impl<T: NsCommonOps> PerOpenFileOps for NsFile<T> {
     fn check_seekable(&self) -> Result<()> {
-        return_errno_with_message!(Errno::ESPIPE, "ns files are not seekable");
+        return_errno!(Errno::ESPIPE, "ns files are not seekable");
     }
 
     fn is_offset_aware(&self) -> bool {
@@ -208,7 +208,7 @@ impl<T: NsCommonOps> PerOpenFileOps for NsFile<T> {
                 let current = current!();
                 let current_user_ns = current.user_ns().lock();
                 if !current_user_ns.is_same_or_ancestor_of(user_ns) {
-                    return_errno_with_message!(
+                    return_errno!(
                         Errno::EPERM,
                         "the current namespace is not an ancestor of the owner user namespace"
                     );
@@ -237,7 +237,7 @@ impl<T: NsCommonOps> PerOpenFileOps for NsFile<T> {
                 Ok(0)
             }
             // TODO: Support additional ioctl commands
-            _ => return_errno_with_message!(Errno::ENOTTY, "the ioctl command is unknown"),
+            _ => return_errno!(Errno::ENOTTY, "the ioctl command is unknown"),
         })
     }
 }
@@ -255,7 +255,7 @@ impl<T: NsCommonOps> FileOps for NsFile<T> {
         _writer: &mut VmWriter,
         _status_flags: StatusFlags,
     ) -> Result<usize> {
-        return_errno_with_message!(
+        return_errno!(
             Errno::EINVAL,
             "ns files cannot be read at a specific offset"
         );
@@ -267,7 +267,7 @@ impl<T: NsCommonOps> FileOps for NsFile<T> {
         _reader: &mut VmReader,
         _status_flags: StatusFlags,
     ) -> Result<usize> {
-        return_errno_with_message!(
+        return_errno!(
             Errno::EINVAL,
             "ns files cannot be written at a specific offset"
         );
