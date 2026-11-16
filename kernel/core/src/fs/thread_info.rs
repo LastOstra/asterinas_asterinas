@@ -75,7 +75,7 @@ impl TryFrom<u16> for FileCreationMask {
         if value & !Self::MASK != 0 {
             Err(Error::with_message(
                 Errno::EINVAL,
-                "Invalid FileCreationMask.",
+                "invalid FileCreationMask",
             ))
         } else {
             Ok(Self(value))

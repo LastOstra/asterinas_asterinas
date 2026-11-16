@@ -247,10 +247,10 @@ impl From<aster_block::bio::BioEnqueueError> for Error {
     fn from(error: aster_block::bio::BioEnqueueError) -> Self {
         match error {
             aster_block::bio::BioEnqueueError::IsFull => {
-                Error::with_message(Errno::EBUSY, "The request queue is full")
+                Error::with_message(Errno::EBUSY, "the request queue is full")
             }
             aster_block::bio::BioEnqueueError::Refused => {
-                Error::with_message(Errno::EBUSY, "Refuse to enqueue the bio")
+                Error::with_message(Errno::EBUSY, "refuse to enqueue the bio")
             }
             aster_block::bio::BioEnqueueError::TooBig => {
                 Error::with_message(Errno::EINVAL, "Bio is too big")
@@ -267,7 +267,7 @@ impl From<aster_block::bio::BioStatus> for Error {
                 Error::with_message(Errno::EOPNOTSUPP, "I/O operation is not supported")
             }
             aster_block::bio::BioStatus::NoSpace => {
-                Error::with_message(Errno::ENOSPC, "Insufficient space on device")
+                Error::with_message(Errno::ENOSPC, "insufficient space on device")
             }
             aster_block::bio::BioStatus::IoError => {
                 Error::with_message(Errno::EIO, "I/O operation fails")
@@ -285,7 +285,7 @@ impl From<io_util::IoError> for Error {
                 Error::with_message(Errno::EOPNOTSUPP, "I/O operation is not supported")
             }
             io_util::IoError::OutOfSpace => {
-                Error::with_message(Errno::ENOSPC, "Insufficient space on device")
+                Error::with_message(Errno::ENOSPC, "insufficient space on device")
             }
             io_util::IoError::Failed => Error::with_message(Errno::EIO, "I/O operation fails"),
         }
@@ -295,35 +295,35 @@ impl From<io_util::IoError> for Error {
 impl From<core::num::TryFromIntError> for Error {
     #[track_caller]
     fn from(_: core::num::TryFromIntError) -> Self {
-        Error::with_message(Errno::EINVAL, "Invalid integer")
+        Error::with_message(Errno::EINVAL, "invalid integer")
     }
 }
 
 impl From<core::str::Utf8Error> for Error {
     #[track_caller]
     fn from(_: core::str::Utf8Error) -> Self {
-        Error::with_message(Errno::EINVAL, "Invalid utf-8 string")
+        Error::with_message(Errno::EINVAL, "invalid utf-8 string")
     }
 }
 
 impl From<alloc::string::FromUtf8Error> for Error {
     #[track_caller]
     fn from(_: alloc::string::FromUtf8Error) -> Self {
-        Error::with_message(Errno::EINVAL, "Invalid utf-8 string")
+        Error::with_message(Errno::EINVAL, "invalid utf-8 string")
     }
 }
 
 impl From<core::ffi::FromBytesUntilNulError> for Error {
     #[track_caller]
     fn from(_: core::ffi::FromBytesUntilNulError) -> Self {
-        Error::with_message(Errno::E2BIG, "Cannot find null in cstring")
+        Error::with_message(Errno::E2BIG, "cannot find null in cstring")
     }
 }
 
 impl From<core::ffi::FromBytesWithNulError> for Error {
     #[track_caller]
     fn from(_: core::ffi::FromBytesWithNulError) -> Self {
-        Error::with_message(Errno::E2BIG, "Cannot find null in cstring")
+        Error::with_message(Errno::E2BIG, "cannot find null in cstring")
     }
 }
 
@@ -373,14 +373,14 @@ impl From<Error> for ostd::Error {
 impl From<alloc::ffi::NulError> for Error {
     #[track_caller]
     fn from(_: alloc::ffi::NulError) -> Self {
-        Error::with_message(Errno::E2BIG, "Cannot find null in cstring")
+        Error::with_message(Errno::E2BIG, "cannot find null in cstring")
     }
 }
 
 impl From<int_to_c_enum::TryFromIntError> for Error {
     #[track_caller]
     fn from(_: int_to_c_enum::TryFromIntError) -> Self {
-        Error::with_message(Errno::EINVAL, "Invalid enum value")
+        Error::with_message(Errno::EINVAL, "invalid enum value")
     }
 }
 
@@ -428,7 +428,7 @@ impl From<aster_util::printer::VmPrinterError> for Error {
     fn from(value: aster_util::printer::VmPrinterError) -> Self {
         match value {
             aster_util::printer::VmPrinterError::PageFault => {
-                Error::with_message(Errno::EFAULT, "Page fault occurred during VmPrinter write")
+                Error::with_message(Errno::EFAULT, "page fault occurred during VmPrinter write")
             }
         }
     }

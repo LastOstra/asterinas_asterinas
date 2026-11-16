@@ -489,7 +489,7 @@ impl Iterator for ExfatDentryIterator<'_> {
         if let Err(_e) = read_result {
             return Some(Err(Error::with_message(
                 Errno::EIO,
-                "Unable to read dentry from page cache.",
+                "unable to read dentry from page cache",
             )));
         }
 
@@ -737,7 +737,7 @@ impl ExfatName {
             .iter()
             .any(|&uni_char| !Self::is_valid_char(uni_char))
         {
-            return_errno!(Errno::EINVAL, "invalid file name.")
+            return_errno!(Errno::EINVAL, "invalid file name")
         }
         // TODO:verify dots
         Ok(())
