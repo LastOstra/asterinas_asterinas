@@ -29,8 +29,10 @@ impl IoPortAllocator {
     /// this one. If it is true, only the first port in the PIO range will be marked as occupied;
     /// otherwise, all ports in the PIO range will be marked as occupied.
     pub(super) fn acquire<T, A>(&self, port: u16, is_overlapping: bool) -> Option<IoPort<T, A>> {
+        let end = port.checked_add(size_of::<T>().try_into().ok()?)?;
+
         let range = if !is_overlapping {
-            port..port.checked_add(size_of::<T>().try_into().ok()?)?
+            port..end
         } else {
             port..port.checked_add(1)?
         };
@@ -120,6 +122,9 @@ mod test {
     fn illegal_region() {
         let io_port_a = IoPort::acquire(0xffff);
         assert!(io_port_a.is_err());
+
+        let io_port_overlapping = IoPort::acquire_overlapping(0xfffe);
+        assert!(io_port_overlapping.is_err());
 
         type IllegalIoPort = crate::io::IoPort<[u8; 0x10008], ReadWriteAccess>;
         let io_port_b = IllegalIoPort::acquire(0);
